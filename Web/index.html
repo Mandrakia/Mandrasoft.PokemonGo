@@ -1,0 +1,458 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #map {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            position: absolute;
+        }
+    </style>
+    <meta content='width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=0' name='viewport' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.14.1/moment.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/linq.js/2.2.0.2/linq.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.min.js"></script>
+    <link href="https://code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="map"></div>
+    <div id="searchContainer" style="display:none;background-color :#fff;border :2px solid #fff;border-radius :3px;box-shadow :0 2px 6px rgba(0,0,0,.3);cursor :pointer; margin-bottom :22px; text-align:center;">
+        <input type="text" id="pokemonQuery" />
+        <ul id="pokemonList"></ul>
+        <button id="btnAction">Search !</button>
+    </div>
+    <div id="loginContainer" style="display:none;background-color :#fff;border :2px solid #fff;border-radius :3px;box-shadow :0 2px 6px rgba(0,0,0,.3);cursor :pointer; margin-bottom :22px; text-align:center;">
+        <input type="text" id="login" />
+        <input type="password" id="password" />
+        <button id="btnActionLogin">Filter My pokemons !</button>
+    </div>
+
+
+
+    <script>
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+        var selectedPokemons = [
+            { PokedexNumber: 19, Name: 'Rattata' },
+            { PokedexNumber: 16, Name: 'Roucool' },
+            { PokedexNumber: 41, Name: 'Nosferapti' },
+            { PokedexNumber: 21, Name: 'Piafabec' }];
+        var filterDiv = null;
+        var lang = getParameterByName('lang') == null ? 'fr' : getParameterByName('lang');
+        var loginDiv = null;
+        var markers = [];
+        var intervalQueue = null;
+        var allPokemons = [{ ExpirationTime: new Date(new Date().getTime() + 20000), Marker: null, PokedexNumber: 5, Latitude: 48.8638584966266, Longitude: 2.4050475590047426 }];
+        var authToken = null;
+        var map = null;
+        var selfMarker = null;
+        var lastCallSucceeded = true;
+        var spawnPoints = [];
+
+        function ClearMarkers()
+        {
+            for (var i = 0; i < markers.length; i++) {
+                markers[i].setMap(null);
+            }
+            markers = [];
+            allPokemons = [];
+        }
+        function ClosePopup()
+        {
+            var index = map.controls[google.maps.ControlPosition.RIGHT_CENTER].indexOf(filterDiv);
+            if (index != -1)
+                map.controls[google.maps.ControlPosition.RIGHT_CENTER].removeAt(index);            
+            selectedPokemons = [];
+        }
+        function GetMyPokemonList(login,password)
+        {
+            $.post('api/Authentication/ListMyPokemons', { Login: login, Password: password }, function (ids) {
+                for(var i=0;i<ids.length;i++)
+                {
+                    AddPokemonToList(ids[i]);
+                }
+            });
+            var index = map.controls[google.maps.ControlPosition.BOTTOM_CENTER].indexOf(loginDiv);
+            if (index != -1)
+                map.controls[google.maps.ControlPosition.BOTTOM_CENTER].removeAt(index);
+        }
+        function SwitchMode(mode,reset)
+        {
+            if (intervalQueue != null) clearInterval(intervalQueue);
+            ClearMarkers();            
+            if (mode == "DisplayPokemons") {
+                if(reset == true)
+                    ClosePopup();
+                DisplayPokeSearch("Filter", function () { ClearMarkers(); });
+                intervalQueue = setInterval(RefreshPokemonsFromServer, 1000);
+            }
+            else if (mode == "DisplaySpawnPoints") {
+                ClosePopup();
+                LaunchScan();
+            }
+            else if (mode == "SearchPokemons")
+                LaunchPokeScan();
+            else if (mode == "DisplayPokeSearch") {
+                ClosePopup();
+                DisplayPokeSearch("Search!", function () { SwitchMode('SearchPokemons'); });
+            }
+        }
+        function DisplayLoginForm(callback)
+        {
+            var nContainer = $('#loginContainer').clone();
+            nContainer.css('display', 'block');
+            loginDiv = nContainer[0];
+            $('#btnActionLogin', loginDiv).click(callback);
+            map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(loginDiv);
+        }
+        function DisplayPokeSearch(textButton,callback)
+        {
+            var nContainer = $('#searchContainer').clone();
+            nContainer.css('display', 'block');
+            filterDiv = nContainer[0];
+            $('#btnAction', filterDiv).click(callback);
+            $('#btnAction', filterDiv).text(textButton);
+            for (var i = 0; i < selectedPokemons.length; i++) {
+                $('#pokemonList', filterDiv).append($("<li>").append('<div onclick="RemovePokemonFromList(' + selectedPokemons[i].PokedexNumber + ')"><img src="images/icons/' + selectedPokemons[i].PokedexNumber + '.png"/>' + selectedPokemons[i].Name + '</div>'));
+
+            }
+            $("#pokemonQuery",filterDiv).autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "api/Pokemons/GetPokemonForName",
+                        dataType: "json",
+                        data: {
+                            start: request.term,
+                            lang: lang
+                        },
+                        success: function (data) {
+                            response(data.length === 1 && data[0].length === 0 ? [] : data);
+                        }
+                    });
+                },
+                minLength: 2,
+                select: function (event, ui) {
+                    AddPokemonToList(ui.item);
+                }
+            }).autocomplete("instance")._renderItem = function (ul, item) {
+                return $("<li>")
+                  .append('<div><img src="images/icons/' + item.PokedexNumber + '.png"/>' + item.Name + '</div>')
+                  .appendTo(ul);
+            };
+            map.controls[google.maps.ControlPosition.RIGHT_CENTER].push(filterDiv);          
+            
+        }
+        function AddPokemonToList(poke) {
+            selectedPokemons.push(poke);
+            $("<li>").append('<div onclick="RemovePokemonFromList(' + poke.PokedexNumber + ')"><img src="images/icons/' + poke.PokedexNumber + '.png"/>' + poke.Name + '</div>').appendTo('#pokemonList');
+        }
+        function RemovePokemonFromList(id) {
+            $("#pokemonList img[src*='/" + id + ".png']").parent().parent().remove();
+            for (var i = 0; i < selectedPokemons.length; i++) {
+                if (selectedPokemons[i].PokedexNumber == id) {
+                    selectedPokemons.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        function LaunchScan() {
+            var bounds = map.getBounds();
+            $.get('api/SpawnPoints/GetAllSpawnPointsForBounds/?nelat=' + bounds.getNorthEast().lat() + '&nelng=' + bounds.getNorthEast().lng() + '&swlat=' + bounds.getSouthWest().lat() + '&swlng=' + bounds.getSouthWest().lng(), function (data) {
+                spawnPoints = data;
+                DisplaySpawnPoints(false);
+            });
+        }
+        function LaunchPokeScan() {
+            var bounds = map.getBounds();
+            $.post('api/SpawnPoints/GetAllPokemonSpawns/', {neLat:bounds.getNorthEast().lat(), neLng:bounds.getNorthEast().lng(), swLat:bounds.getSouthWest().lat(), swLng:bounds.getSouthWest().lng(), pokemonIds: Enumerable.From(selectedPokemons).Select(function (a) { return a.PokedexNumber; }).ToArray() }, function (data) {
+                spawnPoints = data;
+                DisplaySpawnPoints(true);
+            });
+        }
+        function DisplaySpawnPoints(isPokeSearch) {
+            Enumerable.From(spawnPoints).ForEach(function (spawn) {
+                var icon = 'images/icons/pokeball.png';
+                if (isPokeSearch == true)
+                {
+                    icon = 'images/icons/' + Enumerable.From(spawn.Encounters).GroupBy(function(a){ return a.PokemonId;}).OrderByDescending(function(a) { return a.Count();}).First().Key() + '.png';
+                }
+                var marker = new google.maps.Marker({
+                    position: { lat: spawn.Latitude, lng: spawn.Longitude },
+                    title: spawn.Id,
+                    icon: icon,
+                    optimized: false
+                });
+                markers.push(marker);
+                BuildToolTipForSpawn(spawn, marker);
+                marker.setMap(map);
+            });
+        }
+        function BuildToolTipForSpawn(spawn, marker) {
+            var st = "<ul class=\"tooltip-spawn\">";
+            Enumerable.From(spawn.Encounters).ForEach(function (enc) {
+                var m = moment.utc(enc.Time, 'HH:mm:ss.zzzzzzz')
+                st += '<li><img src="images/icons/' + enc.PokemonId + '.png" style="width:30px;height:30px"/>' + enc.PokemonName + " à " + m.local().format("HH:mm") + "</li>";
+            });
+            st += "</ul>"
+            var tooltip = new google.maps.InfoWindow({ content: st });
+            marker.addListener('click', function () {
+                tooltip.open(marker.get('map'), marker);
+            });
+        }
+        function RefreshPokemonsFromServer() {
+            if (map.zoom < 16) return;
+            if (!lastCallSucceeded) return;
+            var bounds = map.getBounds();
+            var selectedIds = Enumerable.From(selectedPokemons).Select(function (a) { return a.PokedexNumber; }).ToArray();
+            if(selectedIds == null) selectedIds = [];
+            lastCallSucceeded = false;
+            $.ajax({
+                url: 'api/Pokemons/ListAll/',
+                data: { lang: lang, neLat: bounds.getNorthEast().lat(), neLng: bounds.getNorthEast().lng(), swLat: bounds.getSouthWest().lat(), swLng: bounds.getSouthWest().lng(), pokemonIds: selectedIds },
+                type: 'POST',
+                success: function (pokemons) {
+                    lastCallSucceeded = true;
+                    var allPokeEnum = Enumerable.From(allPokemons);
+                    Enumerable.From(pokemons).ForEach(function (poke) {
+                        if (!allPokeEnum.Any(function (a) { return a.EncounterId == poke.EncounterId }))
+                            allPokemons.push(poke);
+
+                    });                    
+                },
+                error: function (data) {
+                    lastCallSucceeded = true;
+                }
+            });
+        }
+        function attachToolTip(marker, pokemon) {
+            pokemon.Info = new google.maps.InfoWindow({ content: "<h1>" + pokemon.Name + "</h1><br/>Disparait à " + new Date(pokemon.ExpirationTime).toLocaleTimeString() });
+            marker.addListener('click', function () {
+                pokemon.Info.open(marker.get('map'), marker);
+            });
+            //marker.addListener('touch', function () {
+            //    pokemon.Info.open(marker.get('map'), marker);
+            //});
+        }
+        function ReRenderPokemons() {
+            var indexToRemove = [];
+            //var allPokeEnum = Enumerable.From(allPokemons);
+            for (var i = 0; i < allPokemons.length; i++) {
+                var poke = allPokemons[i];
+                if (new Date(poke.ExpirationTime) > new Date() && (poke.Marker == undefined || poke.Marker == null)) {
+
+                    poke.Marker = new google.maps.Marker({
+                        position: { lat: poke.Latitude, lng: poke.Longitude },
+                        title: poke.Name,
+                        icon: 'images/icons/' + poke.PokedexNumber + '.png',
+                        optimized: false
+                    });
+                    markers.push(poke.Marker);
+                    attachToolTip(poke.Marker, poke);
+                    poke.Marker.setMap(map);
+                }
+                else if (new Date(poke.ExpirationTime) < new Date() && poke.Marker != null) {
+                    markers.splice(markers.indexOf(poke.Marker), 1);
+                    poke.Marker.setMap(null);
+                    poke.Marker = null;
+                    poke.Info.setMap(null);
+                    poke.Info = null;
+                    indexToRemove.push(i);
+                }
+            }
+            for (var i = 0; i < indexToRemove.length; i++)
+                allPokemons.splice(indexToRemove[i], 1);
+        }
+        //setInterval(ReRenderPokemons, 500);
+
+    </script>
+    <script>
+
+        var currentCells = [];
+        function RenderCells(cellResponse)
+        {
+            var cells = cellResponse.Cells;
+            for (var i = 0; i < currentCells.length; i++)
+            {
+                currentCells[i].setMap(null);
+            }
+            currentCells = [];
+            for(var i=0;i<cells.length;i++)
+            {
+                cells[i].Shape.push(cells[i].Shape[0]);
+
+                var color = '#FF0000';
+                if (cells[i].Center == true)
+                    color = '#00FF00';
+                // Construct the polygon.
+                var cell = new google.maps.Polygon({
+                    paths: cells[i].Shape,
+                    strokeColor: color,
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: color,
+                    fillOpacity: 0.35
+                });
+                cell.setMap(map);
+                
+                attachToolTipCell(cell, cells[i].Id);
+            }
+            for (var i = 0; i < cellResponse.Centers.length; i++) {
+                AddMarker(cellResponse.Centers[i].lat, cellResponse.Centers[i].lng);
+            }
+        }
+        function AddMarker(lat, lng)
+        {
+            var marker = new google.maps.Marker({
+                position: { lat: lat, lng:lng },
+                title: "Center",
+                optimized: false
+            });
+            marker.setMap(map);
+        }
+        function attachToolTipCell(cell,cellId) {
+            cell.set("Info", cellId);  // Set some attributes for adding extra information into this polygon.   
+
+            google.maps.event.addListener(cell, 'click', function () {
+                var infoWindow = new google.maps.InfoWindow();
+                infoWindow.setContent("Information : " + cell.get("Info"));
+
+                // 'laty,lngy' is the location of one point in PGpoints, which can be chosen as you wish
+                infoWindow.setPosition(cell.getPath().getArray()[0]);
+                infoWindow.open(map);
+            });
+        }
+        function ScanAround(controlDiv,text,callback) {
+            // Set CSS for the control border.
+            var controlUI = document.createElement('div');
+            controlUI.style.backgroundColor = '#fff';
+            controlUI.style.border = '2px solid #fff';
+            controlUI.style.borderRadius = '3px';
+            controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+            controlUI.style.cursor = 'pointer';
+            controlUI.style.marginBottom = '22px';
+            controlUI.style.textAlign = 'center';
+            controlUI.title = 'Click to recenter the map';
+            controlDiv.appendChild(controlUI);
+
+            // Set CSS for the control interior.
+            var controlText = document.createElement('div');
+            controlText.style.color = 'rgb(25,25,25)';
+            controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+            controlText.style.fontSize = '16px';
+            controlText.style.lineHeight = '38px';
+            controlText.style.paddingLeft = '5px';
+            controlText.style.paddingRight = '5px';
+            controlText.innerHTML = text;
+            controlUI.appendChild(controlText);
+
+            // Setup the click event listeners: simply set the map to Chicago.
+            controlUI.addEventListener('click', callback);
+
+        }
+        function initMap() {
+            var mapDiv = document.getElementById('map');
+            map = new google.maps.Map(mapDiv, {
+                center: { lat:48.863947,lng: 2.344622 },
+                disableDoubleClickZoom: true,
+                zoomControl: true,
+                zoomControlOptions: {
+                    position: google.maps.ControlPosition.LEFT_CENTER
+                },
+                scaleControl: true,
+                streetViewControl: true,
+                streetViewControlOptions: {
+                    position: google.maps.ControlPosition.LEFT_TOP
+                },
+                zoom: 18
+            });
+            var centerControlDiv = document.createElement('div');
+            var centerControl = new ScanAround(centerControlDiv, "Display spawn points", function () { SwitchMode("DisplaySpawnPoints"); });
+            centerControlDiv.index = 1;
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+
+            centerControlDiv = document.createElement('div');
+            centerControl = new ScanAround(centerControlDiv, "Display Pokemons", function () { SwitchMode("DisplayPokemons"); });
+            centerControlDiv.index = 1;
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+
+            centerControlDiv = document.createElement('div');
+            centerControl = new ScanAround(centerControlDiv, "Search Pokemons", function () { SwitchMode("DisplayPokeSearch"); });
+            centerControlDiv.index = 1;
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+
+            centerControlDiv = document.createElement('div');
+            centerControl = new ScanAround(centerControlDiv, "Login", function () { DisplayLoginForm(function () { GetMyPokemonList($('#login').val(), $('#password').val()); }); });
+            centerControlDiv.index = 1;
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+
+            setInterval(ReRenderPokemons, 1000);
+
+            SwitchMode("DisplayPokemons");
+            if (!!navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    selfMarker = new google.maps.Marker({
+                        position: { lat: position.coords.latitude, lng: position.coords.longitude },
+                        title: "Ma position"
+                    });
+                    var pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    selfMarker.setMap(map);
+                    map.setCenter(pos);
+                    setInterval(positionUpdate, 1000);
+                });
+            } else {
+                // No support
+            }          
+         
+        }
+        function positionUpdate() {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                transition({ lat: position.coords.latitude, lng: position.coords.longitude });
+            });
+        }
+        var numDeltas = 100;
+        var delay = 10; //milliseconds
+        var i = 0;
+        var deltaLat;
+        var deltaLng;
+        function transition(latlng) {
+            i = 0;
+            deltaLat = (latlng.lat - selfMarker.position.lat()) / numDeltas;
+            deltaLng = (latlng.lng - selfMarker.position.lng()) / numDeltas;
+            moveMarker();
+        }
+
+        function moveMarker() {           
+            var latlng = new google.maps.LatLng(selfMarker.position.lat() + deltaLat, selfMarker.position.lng() + deltaLng);
+            selfMarker.setPosition(latlng);
+            if (i != numDeltas) {
+                i++;
+                setTimeout(moveMarker, delay);
+            }
+        }
+
+    </script>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAnQjZ6_1U2aucQsYxr5cdFOcjbNd3S_x4&libraries=geometry&callback=initMap">
+    </script>
+	<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-81234396-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>
