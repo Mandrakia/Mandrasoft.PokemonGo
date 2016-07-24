@@ -8,10 +8,11 @@ This solution is composed multiple projects
 Scanner
 -------------
 The scanner allows you to contribute to the [website](#website)
+
 Binaries for the scanner can be downloaded [here](http://pokemongo.mandrasoft.fr/releases/Pokescanner.zip)
 
 All you have to do is edit the .config file with any text editor and customize it.
-```
+```XML
     <add key="WebUri" value="http://pokemongo.mandrasoft.fr/" />
     <add key="Login" value="login" />
     <add key="Password" value="password" />
@@ -23,6 +24,7 @@ All you have to do is edit the .config file with any text editor and customize i
 [PokemonGo Map](https://github.com/AHAAAAAAA/PokemonGo-Map) Exporter
 -------------
 This tool allows you to export your [PokemonGo Map](https://github.com/AHAAAAAAA/PokemonGo-Map)  database to a website.
+
 Binaries for the scanner can be downloaded [here](http://pokemongo.mandrasoft.fr/releases/PokemonGoExporter.zip)
 
 [Website](http://pokemongo.mandrasoft.fr/)
@@ -39,7 +41,7 @@ API
 The API allows you to communicate with the PokemonGo servers and do pretty much everything the server allows.
 Here's a simple use of the client.
 
-```
+```C#
 using (var client = new PokemonGoClient(48.8441589993527, 2.36343582639852))
 {
    await client.Login();
