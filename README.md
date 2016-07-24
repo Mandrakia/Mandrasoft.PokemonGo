@@ -4,9 +4,7 @@
 
 This solution is composed multiple projects
 
-[TOC]
 
-----------
 Scanner
 -------------
 The scanner allows you to contribute to the [website](#website)
@@ -22,9 +20,9 @@ All you have to do is edit the .config file with any text editor and customize i
     <add key="JobsToLaunch" value="50" /> //How many Jobs are running simultaneously
     <add key="WebDelay" value="15"/> //Delay between each message to our server.
 ```
-PokemonGo Map[^pokemongomap] Exporter
+[PokemonGo Map](https://github.com/AHAAAAAAA/PokemonGo-Map) Exporter
 -------------
-This tool allows you to export your PokemonGo Map[^pokemongomap]  database to a website.
+This tool allows you to export your [PokemonGo Map](https://github.com/AHAAAAAAA/PokemonGo-Map)  database to a website.
 Binaries for the scanner can be downloaded [here](http://pokemongo.mandrasoft.fr/releases/PokemonGoExporter.zip)
 
 [Website](http://pokemongo.mandrasoft.fr/)
@@ -34,7 +32,6 @@ The website allows you to view in realtime Wild Pokemons that users submitted vi
 
 ![Real time display of pokemons](http://i.imgur.com/fcFXnef.png)
 ![Heatmap analysis](http://i.imgur.com/ERp0yXW.jpg)
- [^pokemongomap]: [https://github.com/AHAAAAAAA/PokemonGo-Map](https://github.com/AHAAAAAAA/PokemonGo-Map)
 
 ----------
 API
