@@ -49,6 +49,7 @@
             { PokedexNumber: 21, Name: 'Piafabec' }];
         var filterDiv = null;
         var lang = getParameterByName('lang') == null ? 'fr' : getParameterByName('lang');
+        var latLng = getParameterByName('latLng');
         var loginDiv = null;
         var markers = [];
         var intervalQueue = null;
@@ -288,7 +289,6 @@
             currentCells = [];
             for(var i=0;i<cells.length;i++)
             {
-                cells[i].Shape.push(cells[i].Shape[0]);
 
                 var color = '#FF0000';
                 if (cells[i].Center == true)
@@ -304,10 +304,16 @@
                 });
                 cell.setMap(map);
                 
-                attachToolTipCell(cell, cells[i].Id);
+                //attachToolTipCell(cell, cells[i].Id);
             }
-            for (var i = 0; i < cellResponse.Centers.length; i++) {
-                AddMarker(cellResponse.Centers[i].lat, cellResponse.Centers[i].lng);
+            for (var i = 0; i < cellResponse.Centers.length; i++) {  
+                // Add circle overlay and bind to marker
+                var circle = new google.maps.Circle({
+                    map: map,
+                    center: new google.maps.LatLng(cellResponse.Centers[i].lat, cellResponse.Centers[i].lng)                    ,
+                    radius: 100,    // 10 miles in metres
+                    fillColor: '#AA0000'
+                });
             }
         }
         function AddMarker(lat, lng)
@@ -397,7 +403,12 @@
 
             setInterval(ReRenderPokemons, 1000);
 
-            SwitchMode("DisplayPokemons");
+            if (latLng != null)
+            {
+                $.get('api/SpawnPoints/GetCells?latLng=' + latLng, RenderCells);
+            }
+            else
+                SwitchMode("DisplayPokemons");
             if (!!navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
                     selfMarker = new google.maps.Marker({

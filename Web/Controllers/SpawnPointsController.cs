@@ -98,49 +98,41 @@ namespace MandraSoft.PokemonGo.Web.Controllers
         }
         [HttpGet]
         [ActionName("GetCells")]
-        public CellResponse GetCells()
+        public CellResponse GetCells(string latLng)
         {
+            var bounds = latLng.Split(',').Select(x=> double.Parse(x,System.Globalization.CultureInfo.InvariantCulture)).ToArray();
             var region_rect = S2LatLngRect.FromPointPair(
-                S2LatLng.FromDegrees(47.924124, 1.985559),
-                S2LatLng.FromDegrees(47.898075, 1.893441));
-            var coverer = new S2RegionCoverer() { MaxLevel = 15, MinLevel = 15, LevelMod = 0, MaxCells = int.MaxValue };
+                S2LatLng.FromDegrees(bounds[0],bounds[1]),
+                S2LatLng.FromDegrees(bounds[2],bounds[3]));
+            var coverer = new S2RegionCoverer() { MaxLevel = 16, MinLevel = 16, LevelMod = 0, MaxCells = int.MaxValue };
             var covering = new List<S2CellId>();
             coverer.GetCovering(region_rect, covering);
-            covering = covering.OrderBy(x => x.Id).ToList();
-            var result = new List<Cell>();
+            var cellsToCheck = S2Helper.GetListOfCellsToCheck(covering).ToDictionary(x=> x.Id);
+            var result = new CellResponse();
+     
             foreach (var cellId in covering)
             {
-                var rCell = new Cell() { Id = cellId.Id, Shape = new List<LatLng>() };
-                var cell = new S2Cell(cellId);
-                for (var i = 0; i < 4; i++)
-                {
-                    var latLng = new S2LatLng(cell.GetVertex(i));
-                    rCell.Shape.Add(new LatLng() { lat = latLng.LatDegrees, lng = latLng.LngDegrees });
-                }
-                result.Add(rCell);
+                var rCell = new Cell(cellId); 
+                result.Cells.Add(rCell);
+                if (cellsToCheck.ContainsKey(cellId.Id))
+                    result.Centers.Add(new LatLng() { lat = cellId.Center().LatDegrees, lng = cellId.Center().LngDegrees });
             }
-            return new CellResponse() { Cells = result, Centers = new List<LatLng>() };
+            return result; 
         }
         [HttpGet]
         [ActionName("GetCells2")]
-        public List<Cell> GetCells2()
+        public CellResponse GetCells2()
         {
             var result = new List<Cell>();
             var tt = S2Helper.GetNearbyCellIds(48.91598573367739, 2.540661974689442);
             var center = S2CellId.FromLatLng(S2LatLng.FromDegrees(48.91598573367739, 2.540661974689442)).ParentForLevel(15);
-            var centersId = new List<ulong>();
-            centersId.Add(center.Id);
+            var centersId = new List<ulong>();      
 
-            for (S2CellId c = center.ChildBegin; c != center.ChildEnd; c = c.Next)
-            {
-                centersId.Add(c.Id);
-                var point = new S2LatLng(new S2Cell(c).Center);
-                tt.AddRange(S2Helper.GetNearbyCellIds(point.LatDegrees, point.LngDegrees));
-            }
+            var res = new CellResponse();
+            
             foreach (var cellId in tt)
             {
-
-                var rCell = new Cell() { Id = cellId, Shape = new List<LatLng>() };
+                var rCell = new Cell() { Id = cellId.ToString(), Shape = new List<LatLng>() };
                 if (centersId.Contains(cellId)) rCell.Center = true;
                 var cell = new S2Cell(new S2CellId(cellId));
                 for (var i = 0; i < 4; i++)
@@ -148,9 +140,12 @@ namespace MandraSoft.PokemonGo.Web.Controllers
                     var latLng = new S2LatLng(cell.GetVertex(i));
                     rCell.Shape.Add(new LatLng() { lat = latLng.LatDegrees, lng = latLng.LngDegrees });
                 }
-                result.Add(rCell);
-            }
-            return result.OrderBy(x => x.Id).ThenBy(x => x.Center).ToList();
+                res.Cells.Add(rCell);
+                var centerLatLng = new S2CellId(cellId).Center();
+                res.Centers.Add(new LatLng() { lat =centerLatLng.LatDegrees,lng = centerLatLng.LngDegrees });
+                }
+            return res;
+
         }
         [HttpGet]
         [ActionName("GetCells3")]
@@ -162,7 +157,7 @@ namespace MandraSoft.PokemonGo.Web.Controllers
             foreach (var cellId in mapManager.MapsCells)
             {
 
-                var rCell = new Cell() { Id = cellId.Key, Shape = new List<LatLng>() };
+                var rCell = new Cell() { Id = cellId.Key.ToString(), Shape = new List<LatLng>() };
                 if (cellId.Value.WildPokemons.Any() || cellId.Value.CatchablePokemons.Any()) rCell.Center = true;
                 var cell = new S2Cell(new S2CellId(cellId.Key));
                 for (var i = 0; i < 4; i++)

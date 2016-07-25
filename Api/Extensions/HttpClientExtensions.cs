@@ -17,20 +17,20 @@ namespace MandraSoft.PokemonGo.Api.Extensions
         static int _Count = 0;
         static long _TotalElapsedNetwork = 0;
         static long _TotalElapsedHandling = 0; 
-        public static async Task<List<IMessage>> GetResponses(this HttpClient client, PokemonGoClient pogoClient, bool withAuthTicket, string url, params Request[] requests)
+        public static async Task<List<IMessage>> GetResponses(this HttpClient client, PokemonGoClient pogoClient, bool withAuthTicket, string url,double? latitude,double? longitude, params Request[] requests)
         {
 #if _INSTRUMENTING
             Stopwatch sw = new Stopwatch();
             sw.Start();
 #endif
-            var response = await GetEnvelope(client, pogoClient, withAuthTicket, url, requests);
+            var response = await GetEnvelope(client, pogoClient, withAuthTicket, url,latitude,longitude, requests);
 #if _INSTRUMENTING
             _TotalElapsedNetwork += sw.ElapsedMilliseconds;
 #endif
             int retryCount = 0;
             while (response.Returns.Count != requests.Length)
             {
-                response = await GetEnvelope(client, pogoClient, withAuthTicket, url, requests);
+                response = await GetEnvelope(client, pogoClient, withAuthTicket, url,latitude,longitude, requests);
                 await Task.Delay(500);
                 retryCount++;
                 if (retryCount == 5)
@@ -89,7 +89,7 @@ namespace MandraSoft.PokemonGo.Api.Extensions
         static private long _TotalPostTime = 0;
         static private long _TotalReadResponse = 0;
         static private long _TotalDeserialization = 0;
-        public static async Task<POGOProtos.Networking.Envelopes.ResponseEnvelope> GetEnvelope(this HttpClient client, PokemonGoClient pogoClient, bool withAuthTicket, string url, params Request[] requests)
+        public static async Task<POGOProtos.Networking.Envelopes.ResponseEnvelope> GetEnvelope(this HttpClient client, PokemonGoClient pogoClient, bool withAuthTicket, string url,double? latitude,double? longitude, params Request[] requests)
         {
             #if _INSTRUMENTING
             Stopwatch sw = new Stopwatch();
@@ -107,7 +107,7 @@ namespace MandraSoft.PokemonGo.Api.Extensions
             sw.Restart();
 #endif
             var response = new POGOProtos.Networking.Envelopes.ResponseEnvelope();
-            var requestEnvloppe = await pogoClient.GetRequest(withAuthTicket, requests);
+            var requestEnvloppe = await pogoClient.GetRequest(withAuthTicket,latitude,longitude, requests);
             var data = requestEnvloppe.ToByteString();
 #if _INSTRUMENTING
             _TotalSerializationRequest += sw.ElapsedMilliseconds;

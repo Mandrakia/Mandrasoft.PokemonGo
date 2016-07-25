@@ -227,6 +227,27 @@
             createHourSlider();
             heatmap.setMap(map);
             DisplayPokeSearch("Display heatmap for Selected Pokemons", function () { LaunchPokeScan(); });
+
+            if (!!navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    selfMarker = new google.maps.Marker({
+                        position: { lat: position.coords.latitude, lng: position.coords.longitude },
+                        title: "Ma position"
+                    });
+                    var pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    selfMarker.setMap(map);
+                    map.setCenter(pos);
+                    setInterval(positionUpdate, 1000);
+                });
+            } else {
+                // No support
+            }
+        }
+
+        function positionUpdate() {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                transition({ lat: position.coords.latitude, lng: position.coords.longitude });
+            });
         }
 
     </script>

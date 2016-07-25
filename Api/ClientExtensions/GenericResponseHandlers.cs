@@ -52,19 +52,18 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         static public async Task HandleEggHatchedResponse(PokemonGoClient client, IMessage response)
         {
             var msg = (GetHatchedEggsResponse)response;
-            Console.ForegroundColor = ConsoleColor.Green;
+            
             foreach (var x in msg.PokemonId)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("An egg hatched ! You received : " + x );
+                Console.ResetColor();
             }
             if (msg.PokemonId.Any())
             {
                 Console.WriteLine("Total XP Awarded : " + msg.ExperienceAwarded.Sum());
                 Console.WriteLine("Total stardust Awarded : " + msg.StardustAwarded.Sum());
             }
-            Console.ResetColor();
-            if(msg.PokemonId.Any())
-            Console.WriteLine("Adding new Eggs in incubators");
         }
 
     }

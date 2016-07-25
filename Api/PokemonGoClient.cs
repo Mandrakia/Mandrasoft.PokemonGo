@@ -186,11 +186,14 @@ namespace MandraSoft.PokemonGo.Api
         public async Task SetServer()
         {
             var serverResponse = await _httpClient.GetEnvelope(this, false, Globals.RpcUrl,
+                null,null,
                 this.GetPlayerRequest(),
                 this.GetHatchedEggRequest(),
                 this.GetInventoryRequest(),
                 this.GetCheckAwardedBadgeRequest(),
                 this.GetDownloadSettingsRequest());
+            if (serverResponse.AuthTicket == null)
+                throw new Exception("Niantic dispatching server under heavy load, or login Provider couldn't validate Token");
 
             _authTicket = new AuthTicket()
             {
@@ -201,13 +204,16 @@ namespace MandraSoft.PokemonGo.Api
             _apiUrl = $"https://{serverResponse.ApiUrl}/rpc";
         }       
 
-        public async Task<POGOProtos.Networking.Envelopes.RequestEnvelope> GetRequest(bool withAuthTicket = true,params Request[] customRequests)
+        public async Task<POGOProtos.Networking.Envelopes.RequestEnvelope> GetRequest(bool withAuthTicket = true,double? latitude=null,double? longitude=null,params Request[] customRequests)
         {
+            double requestedLat = latitude.HasValue ? latitude.Value : Latitude;
+            double requestedLng = longitude.HasValue ? longitude.Value : Longitude;
+
             var request = new POGOProtos.Networking.Envelopes.RequestEnvelope()
             {
                 Altitude = _alt,                
-                Latitude = _lat,
-                Longitude = _lng,
+                Latitude = requestedLat,
+                Longitude = requestedLng,
                 RequestId = 1469378659230941192,
                 StatusCode = 2,
                 Unknown12 = 989, //Required otherwise we receive incompatible protocol

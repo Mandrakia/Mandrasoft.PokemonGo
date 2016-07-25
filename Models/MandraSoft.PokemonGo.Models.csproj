@@ -42,6 +42,9 @@
       <HintPath>..\packages\Google.Protobuf.3.0.0-beta4\lib\net45\Google.Protobuf.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="S2Geometry">
+      <HintPath>..\Tools\PokeScanner\bin\Debug\S2Geometry.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
@@ -87,6 +90,7 @@
     <Compile Include="POGOProtos\POGOProtosSettingsMasterItem.cs" />
     <Compile Include="POGOProtos\POGOProtosSettingsMasterPokemon.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\S2Helper.cs" />
     <Compile Include="WebModels\Mixed\Encounter.cs" />
     <Compile Include="WebModels\Requests\BaseRequest.cs" />
     <Compile Include="WebModels\Requests\LoginContainer.cs" />

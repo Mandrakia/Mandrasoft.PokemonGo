@@ -26,7 +26,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<UseItemCaptureResponse> GetUseItemCaptureResponse(this PokemonGoClient client, ItemId itemType, ulong encounterId, string spawnId)
         {
-            return (UseItemCaptureResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetUseItemCaptureRequest(itemType, encounterId, spawnId)))[0];
+            return (UseItemCaptureResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetUseItemCaptureRequest(itemType, encounterId, spawnId)))[0];
         }
         static internal Request GetEncounterRequest(this PokemonGoClient client, ulong encounterId, string spawnId)
         {
@@ -41,12 +41,12 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<EncounterResponse> GetEncounterResponse(this PokemonGoClient client, ulong encounterId, string spawnId)
         {
-            return (EncounterResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetEncounterRequest(encounterId, spawnId)))[0];
+            return (EncounterResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetEncounterRequest(encounterId, spawnId)))[0];
         }
 
         static public async Task<GetIncensePokemonResponse> GetIncensePokemonsResponse(this PokemonGoClient client)
         {
-            return (GetIncensePokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetIncensePokemonRequest()))[0];
+            return (GetIncensePokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetIncensePokemonRequest()))[0];
         }
         static internal Request GetIncensePokemonRequest(this PokemonGoClient client)
         {
@@ -69,7 +69,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<IncenseEncounterResponse> GetIncenseEncounterResponse(this PokemonGoClient client, long encounterId, string encounterLocation)
         {
-            return (IncenseEncounterResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetIncenseEncounterRequest(encounterId, encounterLocation)))[0];
+            return (IncenseEncounterResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetIncenseEncounterRequest(encounterId, encounterLocation)))[0];
         }
 
         static internal Request GetCatchPokemonRequest(this PokemonGoClient client, ulong encounterId, string spawnpoint, ItemId pokeType)
@@ -88,7 +88,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<CatchPokemonResponse> GetCatchPokemonResponse(this PokemonGoClient client, ulong encounterId, string spawnpoint,ItemId pokeType)
         { 
-            return (CatchPokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetCatchPokemonRequest(encounterId, spawnpoint, pokeType)))[0];
+            return (CatchPokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetCatchPokemonRequest(encounterId, spawnpoint, pokeType)))[0];
         }
     }
 }

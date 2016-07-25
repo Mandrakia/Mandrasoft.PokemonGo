@@ -25,7 +25,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<UseItemXpBoostResponse> GetUseItemXpBoostResponse(this PokemonGoClient client, ItemId itemId)
         {
-            return (UseItemXpBoostResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetUseItemXpBoostRequest(itemId)))[0];
+            return (UseItemXpBoostResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetUseItemXpBoostRequest(itemId)))[0];
         }
     }
 }
