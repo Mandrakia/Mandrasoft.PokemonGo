@@ -39,7 +39,7 @@ namespace MandraSoft.PokemonGo.Web
             //    RecurringJob.AddOrUpdate(iTotal.ToString(), () => ScanningJobs.ScanAllParisArea(48.883994, 2.660292, 48.859859, 2.619515, jobCountersRichard, i,"ClientRichard"), Cron.Minutely());
             //    iTotal++;
             //}
-            app.UseHangfireServer();
+            app.UseHangfireServer(new BackgroundJobServerOptions() { WorkerCount = 100 });
             //Hangfire.RecurringJob.AddOrUpdate("Update Paris 1", () => ScanningJobs.ScanAllPokemonsForAddress("1er arrondissement,75001  Paris"), Cron.MinuteInterval(1));
             // Pour plus d'informations sur la façon de configurer votre application, consultez http://go.microsoft.com/fwlink/?LinkID=316888
         }

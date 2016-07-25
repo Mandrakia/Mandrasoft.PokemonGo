@@ -16,6 +16,7 @@ using System.Net.Http.Extensions.Compression.Core.Compressors;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace MandraSoft.PokemonGo.Api.Managers
 {
@@ -55,12 +56,14 @@ namespace MandraSoft.PokemonGo.Api.Managers
         private SemaphoreSlim _semaphorePurge = new SemaphoreSlim(1, 1);
 
         private DateTime _lastPurge = DateTime.MinValue;
+
         /// <summary>
         /// Called by the GenericResponseHandler each time a response of type GetMapObjectsResponse is received.
         /// </summary>
         /// <param name="resp"></param>
         internal void UpdateMapCells(GetMapObjectsResponse resp)
         {
+
             // Clearing expired Pokemons
             // Only 1 thread need to do it hence the _semaphore, not blocking if a thread is already doing it
             // the others will just go on.
@@ -87,7 +90,11 @@ namespace MandraSoft.PokemonGo.Api.Managers
                 }
             }
             // Making sure it's a success before going on with the treatment.
-            if (resp.Status != MapObjectsStatus.Success) return;
+            if (resp.Status != MapObjectsStatus.Success)
+            {
+                Console.WriteLine("Map response error");
+                return;
+            }
             // Converting POGProto to Poco ObjectList
             // Because when i tried to keep the state as POGProtos I kept having exception when adding/removing from RepeatedFields
             // Anyway all the serialization overhead was completely useless and a resource sink.

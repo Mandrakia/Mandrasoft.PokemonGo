@@ -15,28 +15,32 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
     static public class Map
     {
 
-        static internal Request GetMapRequest(this PokemonGoClient client, IList<ulong> CellIds = null)
+        static internal Request GetMapRequest(this PokemonGoClient client, IList<ulong> CellIds = null,double? latitude=null,double? longitude = null)
         {
+            double requestedLat = latitude.HasValue ? latitude.Value : client.Latitude;
+            double requestedLng = longitude.HasValue ? longitude.Value : client.Longitude;
             var customRequest = new GetMapObjectsMessage()
             {
-                Latitude = client.Latitude,
-                Longitude = client.Longitude
+                Latitude = requestedLat,
+                Longitude = requestedLng
             };
             if (CellIds == null)
-                CellIds = S2Helper.GetNearbyCellIds(client.Latitude, client.Longitude);
+                CellIds = S2Helper.GetNearbyCellIds(requestedLat, requestedLng);
             customRequest.CellId.Add(CellIds);
             customRequest.SinceTimestampMs.AddRange(client.MapManager.GetLastUpdatedTimestamp(CellIds));
             return new Request() { RequestType = RequestType.GetMapObjects, RequestMessage = customRequest.ToByteString() };
         }
-        static public async Task UpdateMapObjects(this PokemonGoClient client,IList<ulong> CellIds = null)
+        static public async Task UpdateMapObjects(this PokemonGoClient client,double? latitude = null,double? longitude = null,IList<ulong> CellIds = null)
         {
-
-            var res = await client._httpClient.GetResponses(client, true, client._apiUrl,
-                client.GetMapRequest(CellIds),
-                client.GetHatchedEggRequest(),
-                client.GetInventoryRequest(),
-                client.GetCheckAwardedBadgeRequest(),
-                client.GetDownloadSettingsRequest());
+            using (var httpClient = client.GetHttpClient())
+            {
+                var res = await httpClient.GetResponses(client, true, client._apiUrl,
+                    client.GetMapRequest(CellIds, latitude, longitude),
+                    client.GetHatchedEggRequest(),
+                    client.GetInventoryRequest(),
+                    client.GetCheckAwardedBadgeRequest(),
+                    client.GetDownloadSettingsRequest());
+            }
         }
 
         static internal Request GetPlayerUpdateRequest(this PokemonGoClient client)

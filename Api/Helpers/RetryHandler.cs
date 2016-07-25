@@ -37,7 +37,7 @@ namespace MandraSoft.PokemonGo.Api.Helpers
                     System.Console.WriteLine($"retry request {request.RequestUri}");
                     if (i < MaxRetries)
                     {
-                        await Task.Delay(1000);
+                        await Task.Delay(2000);
                         continue;
                     }
                     throw;

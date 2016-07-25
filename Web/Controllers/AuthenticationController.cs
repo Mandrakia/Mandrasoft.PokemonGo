@@ -19,8 +19,8 @@ namespace MandraSoft.PokemonGo.Web.Controllers
             {
                 await client.LoginGoogle(login.Login, login.Password);
                 await client.SetServer();
-                var inventory = await client.UpdateInventory();
-                return inventory.InventoryDelta.InventoryItems.Where(x => x.InventoryItemData.PokemonData != null && x.InventoryItemData.PokemonData.PokemonId != PokemonId.Missingno).Select(x => (int)x.InventoryItemData.PokemonData.PokemonId).Distinct().Select(x => new MapPokemon() { PokedexNumber = x, Name = Globals.PokemonNamesById[x][login.lang] }).ToList();
+                await client.UpdateInventory();
+                return client.InventoryManager.Items.Where(x => x.InventoryItemData.PokemonData != null && x.InventoryItemData.PokemonData.PokemonId != PokemonId.Missingno).Select(x => (int)x.InventoryItemData.PokemonData.PokemonId).Distinct().Select(x => new MapPokemon() { PokedexNumber = x, Name = Globals.PokemonNamesById[x][login.lang] }).ToList();
             }
         }
     }

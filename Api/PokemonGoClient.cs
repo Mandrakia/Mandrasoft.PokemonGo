@@ -33,6 +33,9 @@ namespace MandraSoft.PokemonGo.Api
         public delegate Task WalkCallback(PokemonGoClient client);
         public string Name { get; set; }
 
+        public string LoginUser { get; set; } = Configuration.Login;
+        public string Password { get; set; } = Configuration.Password;
+
         internal HttpClient _httpClient;
         internal string _token,_apiUrl;
         private AuthType _provider;
@@ -63,8 +66,12 @@ namespace MandraSoft.PokemonGo.Api
         public PokemonGoClient()
         {
              InitManagers();
-             ClientCompressionHandler handler = new ClientCompressionHandler(new GZipCompressor(), new DeflateCompressor());
-            _httpClient = new HttpClient(new RetryHandler(handler));
+            _httpClient = GetHttpClient();
+        }
+        public HttpClient GetHttpClient()
+        {
+            ClientCompressionHandler handler = new ClientCompressionHandler(new GZipCompressor(), new DeflateCompressor());
+            var _httpClient = new HttpClient(new RetryHandler(handler));
             _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Niantic App");
             //"Dalvik/2.1.0 (Linux; U; Android 5.1.1; SM-G900F Build/LMY48G)");
             _httpClient.DefaultRequestHeaders.ExpectContinue = false;
@@ -73,6 +80,7 @@ namespace MandraSoft.PokemonGo.Api
             _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type",
                 "application/x-www-form-urlencoded");
             _httpClient.Timeout = new TimeSpan(0, 0, 10);
+            return _httpClient;
         }
         public void InitManagers()
         {
@@ -90,33 +98,35 @@ namespace MandraSoft.PokemonGo.Api
             if (Configuration.AuthType == AuthType.PTC)
             {
                 _provider = AuthType.PTC;
-                _token = await PtcLogin.GetAccessToken(Configuration.Login, Configuration.Password);
+                _token = await PtcLogin.GetAccessToken(LoginUser,Password);
             }
             else if (Configuration.AuthType == AuthType.Google)
             {
                 _provider = AuthType.Google;
-                _token = await GoogleLogin.LoginGoogle(Configuration.Login, Configuration.Password);
+                _token = await GoogleLogin.LoginGoogle(LoginUser,Password);
             }
         }
         public async Task LoginPtc(string login,string password)
         {
-            _token = await PtcLogin.GetAccessToken(login,password);
-            _provider = AuthType.PTC;
+            LoginUser = login;
+            Password = password;
+            await LoginPtc();
         }
         public async Task LoginPtc()
         {
-            _token = await PtcLogin.GetAccessToken(Configuration.Login, Configuration.Password);
+            _token = await PtcLogin.GetAccessToken(LoginUser,Password);
             _provider = AuthType.PTC;
         }
         public async Task LoginGoogle()
         {
-            _token = await GoogleLogin.LoginGoogle(Configuration.Login, Configuration.Password);
+            _token = await GoogleLogin.LoginGoogle(LoginUser,Password);
             _provider = AuthType.Google;
         }
         public async Task LoginGoogle(string username, string password)
         {
-            _token = await GoogleLogin.LoginGoogle(username, password);
-            _provider = AuthType.Google;
+            LoginUser = username;
+            Password = password;
+            await LoginGoogle();
         }
 
         public TimeSpan GetWalkingDuration(double lat, double lng, TravelingSpeed speed = TravelingSpeed.Walk)

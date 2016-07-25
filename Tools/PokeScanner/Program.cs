@@ -1,6 +1,7 @@
 ﻿using Google.Common.Geometry;
 using MandraSoft.PokemonGo.Api;
 using MandraSoft.PokemonGo.Api.ClientExtensions;
+using MandraSoft.PokemonGo.Communicator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace MandraSoft.PortablePokeRadar
         private static async Task Execute()
         {
             var client = new PokemonGoClient();
-            client.MapObjectsHandler = MandraSoft.PokemonGo.Communicator.Web.Instance.UpdateResponseToWebsite;
+            client.MapObjectsHandler = Web.Instance.UpdateResponseToWebsite;
             bool success = false;
             while (!success)
             {
@@ -50,8 +51,9 @@ namespace MandraSoft.PortablePokeRadar
             var tasks = new List<Task>();
             for (var i = 0; i < jobs; i++)
             {
-                tasks.Add(ScanAllArea(bounds[0], bounds[1], bounds[2], bounds[3], jobs, i, client));
-            }
+                tasks.Add(ScanAllArea(bounds[0], bounds[1], bounds[2], bounds[3], jobs, i, client));                
+                
+            }            
             Task.WaitAll(tasks.ToArray());
             client.Dispose();
         }
@@ -80,6 +82,7 @@ namespace MandraSoft.PortablePokeRadar
                             await client.UpdateMapObjects();
                         }
                     }
+                    Console.WriteLine("Worker : " + indexNumber + " finished! Looping now.");
                 }
                 catch (Exception ex)
                 {

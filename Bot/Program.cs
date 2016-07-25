@@ -73,15 +73,13 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
             {
                 var cellIds = covering.Take(61).ToList();
                 var origin = cellIds[30].ToLatLng();
-                client.SetCoordinates(origin.LatDegrees, origin.LngDegrees);
-                await client.UpdateMapObjects(cellIds.Select(x => x.Id).ToList());
+                await client.UpdateMapObjects(origin.LatDegrees, origin.LngDegrees,cellIds.Select(x => x.Id).ToList());
                 covering.RemoveRange(0, 61);
             }
             if (covering.Count % 2 != 1)
                 covering.Add(covering.Last().Next);
             var origin2 = covering[(covering.Count - 1) / 2].ToLatLng();
-            client.SetCoordinates(origin2.LatDegrees, origin2.LngDegrees);
-            await client.UpdateMapObjects(covering.Select(x => x.Id).ToList());
+            await client.UpdateMapObjects(origin2.LatDegrees, origin2.LngDegrees,covering.Select(x => x.Id).ToList());
 
         }
         private static async Task ExecuteFarmingPokestops(PokemonGoClient client,int maxToDo = int.MaxValue)
