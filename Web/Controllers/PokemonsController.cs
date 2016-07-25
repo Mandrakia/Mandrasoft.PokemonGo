@@ -28,8 +28,8 @@ namespace MandraSoft.PokemonGo.Web.Controllers
                                   query.neLng,
                                   query.neLat
                          ), 4326);
-                    var res = await ctx.Encounters.Where(x => !query.pokemonIds.Contains(x.PokemonId) && x.SpawnPoint.Location.Intersects(box) && x.ExpirationTime > DateTime.UtcNow)
-                            .Select(x => new MapPokemon() { ExpirationTime = x.ExpirationTime, Latitude = x.SpawnPoint.Location.Latitude, Longitude = x.SpawnPoint.Location.Longitude, PokedexNumber = x.PokemonId, EncounterId = x.Id}).ToListAsync();
+                    var res = await ctx.SpawnPoints.Where(x=> x.Location.Intersects(box)).SelectMany(a => a.Encounters.Where(x=> x.ExpirationTime > DateTime.UtcNow).Select(x=>  new MapPokemon() { ExpirationTime = x.ExpirationTime, Latitude = x.SpawnPoint.Location.Latitude, Longitude = x.SpawnPoint.Location.Longitude, PokedexNumber = x.PokemonId, EncounterId = x.Id})).ToListAsync();
+                    res.RemoveAll(x => query.pokemonIds.Contains(x.PokedexNumber));
                     res.ForEach(x => x.Name = Globals.PokemonNamesById[x.PokedexNumber][query.lang]);
                     return res;
                 }

@@ -101,8 +101,8 @@
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\HttpClientExtensions.cs" />
     <Compile Include="Globals.cs" />
+    <Compile Include="Helpers\ConcurrentHashset.cs" />
     <Compile Include="Helpers\RetryHandler.cs" />
-    <Compile Include="Helpers\S2Helper.cs" />
     <Compile Include="Helpers\Utils.cs" />
     <Compile Include="LoginProviders\GoogleLogin.cs" />
     <Compile Include="LoginProviders\PtcLogin.cs" />

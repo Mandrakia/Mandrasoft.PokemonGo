@@ -25,7 +25,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<RecycleInventoryItemResponse> GetRecycleInventoryItemResponse(this PokemonGoClient client, ItemId itemId, int count)
         {
-            return (RecycleInventoryItemResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetRecycleInventoryItemRequest(itemId, count)))[0];
+            return (RecycleInventoryItemResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetRecycleInventoryItemRequest(itemId, count)))[0];
         }
         static public Request GetInventoryRequest(this PokemonGoClient client, long lastTimestamp = -1)
         {
@@ -35,7 +35,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task UpdateInventory(this PokemonGoClient client)
         {
-            await client._httpClient.GetResponses(client, true, client._apiUrl,client.GetInventoryRequest());
+            await client._httpClient.GetResponses(client, true, client._apiUrl,null,null,client.GetInventoryRequest());
         }
     }
 }

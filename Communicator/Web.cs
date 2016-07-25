@@ -1,4 +1,5 @@
 ﻿using MandraSoft.PokemonGo.Api;
+using MandraSoft.PokemonGo.Api.Helpers;
 using MandraSoft.PokemonGo.Models;
 using MandraSoft.PokemonGo.Models.PocoProtos;
 using MandraSoft.PokemonGo.Models.WebModels.Requests;
@@ -33,8 +34,7 @@ namespace MandraSoft.PokemonGo.Communicator
                 }
             }
         }
-        private HttpClient _httpClient;
-        
+        private HttpClient _httpClient;        
 
 
         private Web()
@@ -48,12 +48,13 @@ namespace MandraSoft.PokemonGo.Communicator
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
-
+        public ConcurrentHashSet<ulong> _EncountersAlreadySent = new ConcurrentHashSet<ulong>();
         private IEnumerable<WildPokemonPoco> _Backup;
         private SemaphoreSlim _Semaphore = new SemaphoreSlim(1, 1);
         private DateTime _lastSentData = DateTime.MinValue;
-        private Dictionary<ulong,WildPokemonPoco> _Buffer = new Dictionary<ulong, WildPokemonPoco>();
+        private Dictionary<ulong, WildPokemonPoco> _Buffer = new Dictionary<ulong, WildPokemonPoco>();
         private object _BufferLock = new object();
+        private int _errorCount = 0;
         /// <summary>
         /// WebSite Callback meant te be passed to PokemonGoClient.MapObjectsHandler
         /// Can be called by multiple threads and multiple clients.
@@ -76,51 +77,61 @@ namespace MandraSoft.PokemonGo.Communicator
             {
                 lock (_BufferLock)
                 {
-                    if (!_Buffer.ContainsKey(wild.EncounterId))
-                        _Buffer.Add(wild.EncounterId, wild);
-                    else
-                        _Buffer[wild.EncounterId] = wild;
+                    if (!_Buffer.ContainsKey(wild.EncounterId) && !_EncountersAlreadySent.Contains(wild.EncounterId))
+                        _Buffer.Add(wild.EncounterId, wild);                    
                 }
             }
-            if ((DateTime.UtcNow - _lastSentData).TotalSeconds > Configuration.WebDelay)
+            if (await _Semaphore.WaitAsync(1))
             {
-                if (await _Semaphore.WaitAsync(1))
+                try
                 {
-                    List<WildPokemonPoco> listToSend = new List<WildPokemonPoco>();
-                    try
-                    {
-                        lock (_BufferLock)
-                        {
-                            listToSend = _Buffer.Values.ToList();
-                            _Buffer = new Dictionary<ulong, WildPokemonPoco>();
-                        }
-                        if (_Backup.Any())
-                        {
-                            listToSend.AddRange(_Backup);
-                        }
-                        if (listToSend.Any())
 
+                    if ((DateTime.UtcNow - _lastSentData).TotalSeconds > Configuration.WebDelay)
+                    {
+                        List<WildPokemonPoco> listToSend = new List<WildPokemonPoco>();
+                        try
                         {
-                            await UpdateResponseToWebsite(listToSend);
-                            _lastSentData = DateTime.UtcNow;
+
+                            lock (_BufferLock)
+                            {
+                                listToSend = _Buffer.Values.ToList();
+                                _Buffer = new Dictionary<ulong, WildPokemonPoco>();
+                            }
+                            if (_Backup.Any())
+                            {
+                                listToSend.AddRange(_Backup);
+                            }
+                            if (listToSend.Any())
+                            {
+                                await UpdateResponseToWebsite(listToSend);
+                                _EncountersAlreadySent.AddRange(listToSend.Select(x => x.EncounterId));
+                                _lastSentData = DateTime.UtcNow;
+                                _Backup = new List<WildPokemonPoco>();
+                            }
+                            _errorCount = 0;
                         }
+                        catch (Exception e)
+                        {
+                            _Backup = listToSend;
+                            _errorCount++;
+                            if (_errorCount >= 10)
+                            {
+                                Console.WriteLine("Error sending values to the website");
+                                Console.WriteLine(e.Message);
+                            }
+                        }
+                        
                     }
-                    catch (Exception e)
-                    {
-                        _Backup = listToSend;
-                        Console.WriteLine("Error sending values to the website");
-                        Console.WriteLine(e.Message);
-                    }
-                    finally
-                    {
-                        _Semaphore.Release();
-                    }
+                }
+                finally
+                {
+                    _Semaphore.Release();
                 }
             }
         }
         public async Task<SpawnPointsImport> UpdateResponseToWebsite(IEnumerable<WildPokemonPoco> pokemons)
         {
-            var importMsg = new SpawnPointsImport() { SpawnPoints = pokemons.GroupBy(x => x.SpawnPointId).Select(x => new PokemonGo.Models.WebModels.Mixed.SpawnPoint() { Id = x.Key, Latitude = x.First().Latitude, Longitude = x.First().Longitude, Encounters = x.Select(a => new PokemonGo.Models.WebModels.Mixed.Encounter() { Id = a.EncounterId, PokemonId = (int)a.PokemonData.PokemonId, SpawnTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(a.LastModifiedTimestampMs).AddMilliseconds(a.TimeTillHiddenMs).AddMinutes(-15)}).ToList() }).ToList() };
+            var importMsg = new SpawnPointsImport() { SpawnPoints = pokemons.GroupBy(x => x.SpawnPointId).Select(x => new PokemonGo.Models.WebModels.Mixed.SpawnPoint() { Id = x.Key, Latitude = x.First().Latitude, Longitude = x.First().Longitude, Encounters = x.Select(a => new PokemonGo.Models.WebModels.Mixed.Encounter() { Id = a.EncounterId, PokemonId = (int)a.PokemonData.PokemonId, SpawnTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(a.LastModifiedTimestampMs).AddMilliseconds(a.TimeTillHiddenMs).AddMinutes(-15) }).ToList() }).ToList() };
             var t = importMsg.SpawnPoints.SelectMany(e => e.Encounters).GroupBy(e => e.Id).OrderByDescending(x => x.Count()).ToList();
             var servResponse = await _httpClient.PostAsJsonAsync("api/SpawnPoints/PostEncounter", importMsg);
             var result = await servResponse.Content.ReadAsAsync<BaseResponse>();

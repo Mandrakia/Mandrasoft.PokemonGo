@@ -24,7 +24,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<EvolvePokemonResponse> GetEvolvePokemonResponse(this PokemonGoClient client, ulong pokemonId)
         {
-            return (EvolvePokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetEvolvePokemonRequest(pokemonId)))[0];
+            return (EvolvePokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetEvolvePokemonRequest(pokemonId)))[0];
         }
         static internal Request GetReleasePokemonRequest(this PokemonGoClient client, ulong pokemonId)
         {
@@ -36,7 +36,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<ReleasePokemonResponse> GetReleasePokemonResponse(this PokemonGoClient client, ulong pokemonId)
         {
-            return (ReleasePokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetReleasePokemonRequest(pokemonId)))[0];
+            return (ReleasePokemonResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetReleasePokemonRequest(pokemonId)))[0];
         }
     }
 }

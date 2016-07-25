@@ -25,7 +25,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
                 Longitude = requestedLng
             };
             if (CellIds == null)
-                CellIds = S2Helper.GetNearbyCellIds(requestedLat, requestedLng);
+                CellIds = S2Helper.GetNearbyCellIdsOld(requestedLat, requestedLng);
             customRequest.CellId.Add(CellIds);
             customRequest.SinceTimestampMs.AddRange(client.MapManager.GetLastUpdatedTimestamp(CellIds));
             return new Request() { RequestType = RequestType.GetMapObjects, RequestMessage = customRequest.ToByteString() };
@@ -34,7 +34,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         {
             using (var httpClient = client.GetHttpClient())
             {
-                var res = await httpClient.GetResponses(client, true, client._apiUrl,
+                var res = await httpClient.GetResponses(client, true, client._apiUrl,latitude,longitude,
                     client.GetMapRequest(CellIds, latitude, longitude),
                     client.GetHatchedEggRequest(),
                     client.GetInventoryRequest(),
@@ -54,7 +54,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<PlayerUpdateResponse> GetPlayerUpdateResponse(this PokemonGoClient client)
         {
-            return (PlayerUpdateResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetPlayerUpdateRequest()))[0];
+            return (PlayerUpdateResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetPlayerUpdateRequest()))[0];
         }
         static public async Task<PlayerUpdateResponse> GetPlayerUpdateResponse(this PokemonGoClient client, double lat, double lng)
         {
@@ -80,7 +80,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<FortSearchResponse> GetFortSearchResponse(this PokemonGoClient client, string fortId, double fortLat, double fortLng)
         {
-            return (FortSearchResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetFortSearchRequest(fortId, fortLat, fortLng)))[0];
+            return (FortSearchResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetFortSearchRequest(fortId, fortLat, fortLng)))[0];
         }
 
         static internal Request GetFortDetailsRequest(this PokemonGoClient client, string fortId, double fortLat, double fortLng)
@@ -95,7 +95,7 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
         }
         static public async Task<FortDetailsResponse> GetFortDetailsResponse(this PokemonGoClient client, string fortId, double fortLat, double fortLng)
         {
-            return (FortDetailsResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl, client.GetFortDetailsRequest(fortId, fortLat, fortLng)))[0];
+            return (FortDetailsResponse)(await client._httpClient.GetResponses(client, true, client._apiUrl,null,null, client.GetFortDetailsRequest(fortId, fortLat, fortLng)))[0];
         }
     }
 }
