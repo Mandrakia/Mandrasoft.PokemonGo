@@ -74,8 +74,8 @@ namespace MandraSoft.PokemonGo.Communicator
                     catch (Exception e)
                     {
                         _Backup = listToSend;
-                        Logger.Write("Error sending values to the website");
-                        Logger.Write(e.Message);
+                        Logger.Write("Error sending values to the website", LogLevel.Error);
+                        Logger.Write(e.Message, LogLevel.Error);
                     }
                     finally
                     {

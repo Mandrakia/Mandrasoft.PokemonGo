@@ -43,8 +43,8 @@ namespace MandraSoft.PortablePokeRadar
                 }
                 catch (Exception ex)
                 {
-                    Logger.Write("Error :(");
-                    Logger.Write(ex.Message);
+                    Logger.Write("Error :(", LogLevel.Error);
+                    Logger.Write(ex.Message, LogLevel.Error);
                     Logger.Write("Retrying in 5 seconds");
                     await Task.Delay(5000);
                 }
