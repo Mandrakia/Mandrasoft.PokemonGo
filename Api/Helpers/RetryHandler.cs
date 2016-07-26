@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net;
+using MandraSoft.PokemonGo.Api.Logging;
 
 namespace MandraSoft.PokemonGo.Api.Helpers
 {
@@ -34,7 +35,7 @@ namespace MandraSoft.PokemonGo.Api.Helpers
                 }
                 catch (Exception ex)
                 {
-                    System.Console.WriteLine($"retry request {request.RequestUri}");
+                    Logger.Write($"retry request {request.RequestUri}");
                     if (i < MaxRetries)
                     {
                         await Task.Delay(2000);

@@ -19,6 +19,7 @@ using System.Net.Http.Extensions.Compression.Client;
 using System.Net.Http.Extensions.Compression.Core.Compressors;
 using System.Text;
 using System.Threading.Tasks;
+using MandraSoft.PokemonGo.Api.Logging;
 
 namespace MandraSoft.PokemonGo.Api
 {
@@ -148,9 +149,10 @@ namespace MandraSoft.PokemonGo.Api
             }
             return TimeSpan.FromSeconds(distance / speedF);
         }
+
         public async Task WalkTo(double lat, double lng,TravelingSpeed speed = TravelingSpeed.Walk, WalkCallback callback = null)
         {
-            Console.WriteLine($"Walking toward : {lat} {lng} , ETA : {GetWalkingDuration(lat, lng)}");
+            Logger.Write($"Walking toward : {lat} {lng} , ETA : {GetWalkingDuration(lat, lng)}");
             var destination = S2LatLng.FromDegrees(lat, lng);
             var heading = S2Helper.ComputeHeading(Location, destination);
             Stopwatch sw = new Stopwatch();

@@ -17,6 +17,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using MandraSoft.PokemonGo.Api.Logging;
 
 namespace MandraSoft.PokemonGo.Api.Managers
 {
@@ -92,7 +93,7 @@ namespace MandraSoft.PokemonGo.Api.Managers
             // Making sure it's a success before going on with the treatment.
             if (resp.Status != MapObjectsStatus.Success)
             {
-                Console.WriteLine("Map response error");
+                Logger.Write("Map response error");
                 return;
             }
             // Converting POGProto to Poco ObjectList

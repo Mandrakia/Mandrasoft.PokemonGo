@@ -13,7 +13,6 @@ namespace MandraSoft.PokemonGo.Api.LoginProviders
     {
         internal static async Task<string> LoginGoogle(string username, string password)
         {
-            //Console.WriteLine("[!] Google login for: {0}", username);
             var first = "https://accounts.google.com/o/oauth2/auth?client_id=848232511240-73ri3t7plvk96pj4f85uj8otdat2alem.apps.googleusercontent.com&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&response_type=code&scope=openid%20email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email";
             var second = "https://accounts.google.com/AccountLoginInfo";
             var third = "https://accounts.google.com/signin/challenge/sl/password";
