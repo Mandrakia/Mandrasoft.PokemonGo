@@ -73,13 +73,13 @@ namespace MandraSoft.PokemonGo.Api.Extensions
             _Count++;
             if (_Count % 100 == 0)
             {
-                Console.WriteLine("Average network time : " + (double)_TotalElapsedNetwork / (double)_Count + "ms");
-                Console.WriteLine("     AuthTicket : " + (double)_TotalAuthTicket / (double)_Count + "ms");
-                Console.WriteLine("     Request Serialization : " + (double)_TotalSerializationRequest / (double)_Count + "ms");
-                Console.WriteLine("     Post Time : " + (double)_TotalPostTime / (double)_Count + "ms");
-                Console.WriteLine("     ReadResponse : " + (double)_TotalReadResponse / (double)_Count + "ms");
-                Console.WriteLine("     Deserialization : " + (double)_TotalDeserialization / (double)_Count + "ms");
-                Console.WriteLine("Average handling time : " + (double)_TotalElapsedHandling / (double)_Count + "ms");
+                Logger.Write("Average network time : " + (double)_TotalElapsedNetwork / (double)_Count + "ms");
+                Logger.Write("     AuthTicket : " + (double)_TotalAuthTicket / (double)_Count + "ms");
+                Logger.Write("     Request Serialization : " + (double)_TotalSerializationRequest / (double)_Count + "ms");
+                Logger.Write("     Post Time : " + (double)_TotalPostTime / (double)_Count + "ms");
+                Logger.Write("     ReadResponse : " + (double)_TotalReadResponse / (double)_Count + "ms");
+                Logger.Write("     Deserialization : " + (double)_TotalDeserialization / (double)_Count + "ms");
+                Logger.Write("Average handling time : " + (double)_TotalElapsedHandling / (double)_Count + "ms");
             }
 #endif
             return result;

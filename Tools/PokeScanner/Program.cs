@@ -2,13 +2,12 @@
 using MandraSoft.PokemonGo.Api;
 using MandraSoft.PokemonGo.Api.ClientExtensions;
 using MandraSoft.PokemonGo.Api.Helpers;
+using MandraSoft.PokemonGo.Api.Logging;
 using MandraSoft.PokemonGo.Communicator;
-using POGOProtos.Networking.Responses;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MandraSoft.PortablePokeRadar
@@ -18,9 +17,11 @@ namespace MandraSoft.PortablePokeRadar
         static private bool Exit;
         static void Main(string[] args)
         {
+            Logger.SetLogger(new ConsoleLogger(LogLevel.Info));
+
             Console.ForegroundColor = ConsoleColor.White;
             Task.Run(() => Execute());
-            System.Console.ReadLine();
+            Console.ReadLine();
             Exit = true;
         }
         private static async Task Execute()
@@ -32,23 +33,23 @@ namespace MandraSoft.PortablePokeRadar
             {
                 try
                 {
-                    Console.WriteLine("Trying to authenticate");
+                    Logger.Write("Trying to authenticate");
                     await client.Login();
-                    Console.WriteLine("Success !");
-                    Console.WriteLine("Asking niantic servers which server I should connect to (The equivalent of the loading screen)");
+                    Logger.Write("Success !");
+                    Logger.Write("Asking niantic servers which server I should connect to (The equivalent of the loading screen)");
                     await client.SetServer();
-                    Console.WriteLine("Success!");
+                    Logger.Write("Success!");
                     success = true;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error :(");
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine("Retrying in 5 seconds");
+                    Logger.Write("Error :(");
+                    Logger.Write(ex.Message);
+                    Logger.Write("Retrying in 5 seconds");
                     await Task.Delay(5000);
                 }
             }
-            Console.WriteLine("Launching workers");
+            Logger.Write("Launching workers");
             var bounds = System.Configuration.ConfigurationManager.AppSettings["BoundsToScan"].Split(',').Select(x => double.Parse(x.Trim(), System.Globalization.CultureInfo.InvariantCulture)).ToArray();
             var area = (S2LatLng.FromDegrees(bounds[0], bounds[1]).GetEarthDistance(S2LatLng.FromDegrees(bounds[0], bounds[3]))/1000)
                 * (S2LatLng.FromDegrees(bounds[0], bounds[1]).GetEarthDistance(S2LatLng.FromDegrees(bounds[2], bounds[1]))/1000);
@@ -89,7 +90,7 @@ namespace MandraSoft.PortablePokeRadar
         private static async Task ScanAllArea(int splittedIn, int indexNumber, PokemonGoClient client)
         {
             int failCounter = 0;
-            Console.WriteLine("Worker : " + indexNumber + " started !");
+            Logger.Write("Worker : " + indexNumber + " started !");
             while (!Exit)
             {
                 try
@@ -103,15 +104,15 @@ namespace MandraSoft.PortablePokeRadar
                         //    client.SetCoordinates(point2.LatDegrees, point2.LngDegrees);
                         //    await client.UpdateMapObjects();
                         //}
-                        //Console.WriteLine("Max range so far : " + maxRange + "meters");
+                        //Logger.Write("Max range so far : " + maxRange + "meters");
                         await client.UpdateMapObjects(cell.Center().LatDegrees, cell.Center().LngDegrees);                        
                     }                    
                     counterCompleted++;                    
                     if (counterCompleted % 10 == 0)
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("Total pokemons sent so far : " + Web.Instance._EncountersAlreadySent.Count);
-                        Console.WriteLine("Average scanning speed : " + ((double)(counterCompleted * areaPerJob) / sw.ElapsedMilliseconds) * 1000 + "km²/sec");
+                        Logger.Write("Total pokemons sent so far : " + Web.Instance._EncountersAlreadySent.Count);
+                        Logger.Write("Average scanning speed : " + ((double)(counterCompleted * areaPerJob) / sw.ElapsedMilliseconds) * 1000 + "km²/sec");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                     failCounter = 0;
@@ -119,13 +120,13 @@ namespace MandraSoft.PortablePokeRadar
                 catch (Exception ex)
                 {
                     failCounter++;
-                    //Console.WriteLine("Worker : " + indexNumber + " crashed !");
-                    //Console.WriteLine(ex.Message);
-                    //Console.WriteLine("Retrying in 5 seconds");
+                    //Logger.Write("Worker : " + indexNumber + " crashed !");
+                    //Logger.Write(ex.Message);
+                    //Logger.Write("Retrying in 5 seconds");
                     await Task.Delay(5000);
                     if (failCounter > 5)
                     {
-                        Console.WriteLine("Something wrong with worker " + indexNumber);
+                        Logger.Write($"Something wrong with worker {indexNumber}");
                         failCounter = 0;
                     }
                 }
@@ -141,7 +142,7 @@ namespace MandraSoft.PortablePokeRadar
                 row += AlignCentre(column, width) + "|";
             }
 
-            Console.WriteLine(row);
+            Logger.Write(row);
         }
 
         static string AlignCentre(string text, int width)
