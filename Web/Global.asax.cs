@@ -1,4 +1,5 @@
 ﻿using MandraSoft.PokemonGo.Api;
+using MandraSoft.PokemonGo.Api.Logging;
 using MandraSoft.PokemonGo.Api.Managers;
 using MandraSoft.PokemonGo.DAL;
 using MandraSoft.PokemonGo.Models.WebModels.Mixed;
@@ -19,6 +20,8 @@ namespace MandraSoft.PokemonGo.Web
         protected string _stateFile;
         protected void Application_Start()
         {
+            Logger.SetLogger(new DebugLogger(LogLevel.Trace));
+
             _stateFile = Server.MapPath("~/SaveState.json");
             _LiveStateFile = Server.MapPath("~/LiveState.json");
             SqlServerTypes.Utilities.LoadNativeAssemblies(Server.MapPath("~/bin"));

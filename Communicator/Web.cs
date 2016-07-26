@@ -1,5 +1,6 @@
 ﻿using MandraSoft.PokemonGo.Api;
 using MandraSoft.PokemonGo.Api.Helpers;
+using MandraSoft.PokemonGo.Api.Logging;
 using MandraSoft.PokemonGo.Models;
 using MandraSoft.PokemonGo.Models.PocoProtos;
 using MandraSoft.PokemonGo.Models.WebModels.Requests;
@@ -116,8 +117,8 @@ namespace MandraSoft.PokemonGo.Communicator
                             _errorCount++;
                             if (_errorCount >= 10)
                             {
-                                Console.WriteLine("Error sending values to the website");
-                                Console.WriteLine(e.Message);
+                                Logger.Write("Error sending values to the website", LogLevel.Error);
+                                Logger.Write(e.Message, LogLevel.Error);
                             }
                         }
                         
@@ -135,7 +136,7 @@ namespace MandraSoft.PokemonGo.Communicator
             var t = importMsg.SpawnPoints.SelectMany(e => e.Encounters).GroupBy(e => e.Id).OrderByDescending(x => x.Count()).ToList();
             var servResponse = await _httpClient.PostAsJsonAsync("api/SpawnPoints/PostEncounter", importMsg);
             var result = await servResponse.Content.ReadAsAsync<BaseResponse>();
-            Console.WriteLine(result.Message);
+            Logger.Write(result.Message);
             if (!result.Success)
             {
                 throw new Exception(result.Message);

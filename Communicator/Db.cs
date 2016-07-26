@@ -1,5 +1,6 @@
 ﻿using EntityFramework.BulkInsert.Extensions;
 using MandraSoft.PokemonGo.Api;
+using MandraSoft.PokemonGo.Api.Logging;
 using MandraSoft.PokemonGo.DAL;
 using MandraSoft.PokemonGo.Models;
 using MandraSoft.PokemonGo.Models.PocoProtos;
@@ -10,7 +11,6 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,8 +74,8 @@ namespace MandraSoft.PokemonGo.Communicator
                     catch (Exception e)
                     {
                         _Backup = listToSend;
-                        Console.WriteLine("Error sending values to the website");
-                        Console.WriteLine(e.Message);
+                        Logger.Write("Error sending values to the website", LogLevel.Error);
+                        Logger.Write(e.Message, LogLevel.Error);
                     }
                     finally
                     {

@@ -1,9 +1,10 @@
 ﻿using Google.Protobuf;
+using MandraSoft.PokemonGo.Api.Logging;
+using POGOProtos.Networking.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using POGOProtos.Networking.Responses;
 
 namespace MandraSoft.PokemonGo.Api.ClientExtensions
 {
@@ -24,14 +25,13 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
                     await GenericHandlers[message.GetType()](client, message);
             }
         }
+
         static public async Task HandleMapObjectsResponse(PokemonGoClient client, IMessage response)
         {
-            var resp = (GetMapObjectsResponse)response;    
+            var resp = (GetMapObjectsResponse)response;
             client.MapManager.UpdateMapCells(resp);
             if (client.MapObjectsHandler != null)
                 await client.MapObjectsHandler(client, resp);
-
-       
         }
 
         static public async Task HandleInventoryResponse(PokemonGoClient client, IMessage response)
@@ -45,26 +45,24 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
             var msg = (CheckAwardedBadgesResponse)response;
             foreach (var x in msg.AwardedBadges)
             {
-                Console.WriteLine("Awarded a badge : " + x);
+                Logger.Write($"Awarded a badge: {x}");
             }
         }
         //TODO: Provide PublicCallBackForIt.
         static public async Task HandleEggHatchedResponse(PokemonGoClient client, IMessage response)
         {
             var msg = (GetHatchedEggsResponse)response;
-            
+
             foreach (var x in msg.PokemonId)
             {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("An egg hatched ! You received : " + x );
-                Console.ResetColor();
+                Logger.Write($"An egg hatched! You received: {x}");
             }
+
             if (msg.PokemonId.Any())
             {
-                Console.WriteLine("Total XP Awarded : " + msg.ExperienceAwarded.Sum());
-                Console.WriteLine("Total stardust Awarded : " + msg.StardustAwarded.Sum());
+                Logger.Write($"Total XP Awarded: {msg.ExperienceAwarded.Sum()}");
+                Logger.Write($"Total stardust Awarded: {msg.StardustAwarded.Sum()}");
             }
         }
-
     }
 }

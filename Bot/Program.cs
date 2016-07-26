@@ -13,6 +13,7 @@ using POGOProtos.Data.Capture;
 using MandraSoft.PokemonGoApi.ConsoleTest.Models;
 using MandraSoft.PokemonGo.Api;
 using MandraSoft.PokemonGo.Models.Enums;
+using MandraSoft.PokemonGo.Api.Logging;
 
 namespace MandraSoft.PokemonGoApi.ConsoleTest
 {
@@ -36,8 +37,9 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
 
         static void Main(string[] args)
         {
+            Logger.SetLogger(new ConsoleLogger(LogLevel.Trace));
             Task.Run(() => Execute());
-            System.Console.ReadLine();
+            Console.ReadLine();
         }
 
         static async void Execute()
@@ -97,7 +99,7 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
                 var fortInfo = await client.GetFortDetailsResponse(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
                 var fortSearch = await client.GetFortSearchResponse(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude);
                 var bag = fortSearch;
-                System.Console.WriteLine($"Farmed XP: {bag.ExperienceAwarded}, Gems: { bag.GemsAwarded}, Eggs: {bag.PokemonDataEgg} Items: {GetFriendlyItemsString(bag.ItemsAwarded)}");
+                Logger.Write($"Farmed XP: {bag.ExperienceAwarded}, Gems: { bag.GemsAwarded}, Eggs: {bag.PokemonDataEgg} Items: {GetFriendlyItemsString(bag.ItemsAwarded)}");
                 if (bag.ExperienceAwarded == 0)
                 {
                     await Task.Delay(4000);
@@ -139,7 +141,7 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
                 //        if (result)
                 //        {
                 //            Console.ForegroundColor = ConsoleColor.Green;
-                //            Console.WriteLine("Caught an unknown Pokemon!!!");
+                //            Logger.Write("Caught an unknown Pokemon!!!");
                 //            Console.ResetColor();
                 //        }
                 //    }                       
@@ -164,7 +166,7 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
                                 if (result)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("Caught an unknown Pokemon!!!");
+                                    Logger.Write("Caught an unknown Pokemon!!!");
                                     Console.ResetColor();
                                 }
                             }
@@ -217,7 +219,7 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
                 if (useRasberry)
                 {
                     var res = await client.GetUseItemCaptureResponse(ItemId.ItemRazzBerry, encounterId, spawnPointId);
-                    System.Console.WriteLine("Used Rasberry response :" + res.Success);
+                    Logger.Write("Used Rasberry response :" + res.Success);
                     await Task.Delay(1000);
                 }
                 caughtPokemonResponse = await client.GetCatchPokemonResponse(encounterId, spawnPointId, itemToUse);
@@ -226,9 +228,9 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
             }
             while (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchEscape);
 
-            System.Console.WriteLine(caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchSuccess ? $"We caught a {pokeId}" : $"{pokeId} got away..");
+            Logger.Write(caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchSuccess ? $"We caught a {pokeId}" : $"{pokeId} got away..");
             if (caughtPokemonResponse.CaptureAward != null)
-                System.Console.WriteLine("Earned : " + caughtPokemonResponse.CaptureAward.Candy.Sum() + " candies and " + caughtPokemonResponse.CaptureAward.Xp.Sum() + " xp and " + caughtPokemonResponse.CaptureAward.Stardust.Sum() + " stardusts");
+                Logger.Write("Earned : " + caughtPokemonResponse.CaptureAward.Candy.Sum() + " candies and " + caughtPokemonResponse.CaptureAward.Xp.Sum() + " xp and " + caughtPokemonResponse.CaptureAward.Stardust.Sum() + " stardusts");
             return caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchSuccess;
         }
         static async Task CatchAllPokemonAround(PokemonGoClient client)
@@ -320,11 +322,11 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
                     }
                 }
             }
-            System.Console.WriteLine("All undesired pokemons evolved : " + xpEarned + "xp received");
+            Logger.Write("All undesired pokemons evolved : " + xpEarned + "xp received");
         }
         private static async Task TransferDuplicates(List<PokemonId> neededPokemons, PokemonGoClient client)
         {
-            System.Console.WriteLine($"Check for duplicates");
+            Logger.Write($"Check for duplicates");
             await client.UpdateInventory();
             var allpokemons = client.InventoryManager.Items.Select(i => i.InventoryItemData?.PokemonData).Where(p => p != null && p?.PokemonId != PokemonId.Missingno);
 
@@ -339,7 +341,7 @@ namespace MandraSoft.PokemonGoApi.ConsoleTest
                 {
                     var dubpokemon = dupes.ElementAt(i).ElementAt(j).value;
                     var transfer = await client.GetReleasePokemonResponse(dubpokemon.Id);
-                    System.Console.WriteLine($"Transfer {dubpokemon.PokemonId} with {dubpokemon.Cp} CP (highest has {dupes.ElementAt(i).Last().value.Cp})");
+                    Logger.Write($"Transfer {dubpokemon.PokemonId} with {dubpokemon.Cp} CP (highest has {dupes.ElementAt(i).Last().value.Cp})");
                 }
             }
         }

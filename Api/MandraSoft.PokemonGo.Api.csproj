@@ -104,6 +104,11 @@
     <Compile Include="Helpers\ConcurrentHashset.cs" />
     <Compile Include="Helpers\RetryHandler.cs" />
     <Compile Include="Helpers\Utils.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
+    <Compile Include="Logging\DebugLogger.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="LoginProviders\GoogleLogin.cs" />
     <Compile Include="LoginProviders\PtcLogin.cs" />
     <Compile Include="Managers\InventoryManager.cs" />
