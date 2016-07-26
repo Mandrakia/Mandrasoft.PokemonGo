@@ -33,8 +33,8 @@ namespace MandraSoft.PokemonGo.Api
         public delegate Task WalkCallback(PokemonGoClient client);
         public string Name { get; set; }
 
-        public string LoginUser { get; set; } = Configuration.Login;
-        public string Password { get; set; } = Configuration.Password;
+        public string LoginUser { get; set; } = Configuration.Settings.Accounts[0].Login;
+        public string Password { get; set; } = Configuration.Settings.Accounts[0].Password;
 
         internal HttpClient _httpClient;
         internal string _token,_apiUrl;
@@ -95,12 +95,12 @@ namespace MandraSoft.PokemonGo.Api
         }
         public async Task Login()
         {
-            if (Configuration.AuthType == AuthType.PTC)
+            if (Configuration.Settings.Accounts[0].AuthType == AuthType.PTC)
             {
                 _provider = AuthType.PTC;
                 _token = await PtcLogin.GetAccessToken(LoginUser,Password);
             }
-            else if (Configuration.AuthType == AuthType.Google)
+            else if (Configuration.Settings.Accounts[0].AuthType == AuthType.Google)
             {
                 _provider = AuthType.Google;
                 _token = await GoogleLogin.LoginGoogle(LoginUser,Password);

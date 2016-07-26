@@ -1,0 +1,82 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PokeScannerV2"
+        xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+        xmlns:WPFViewModels="clr-namespace:MandraSoft.PokemonGo.Models.WPFViewModels;assembly=MandraSoft.PokemonGo.Models" x:Class="PokeScannerV2.ScannedAreaEdit"
+        mc:Ignorable="d"
+        Title="Add/Edit scanned area" Height="447.457" Width="880.678" Icon="favicon.ico" Topmost="True">
+    <Window.DataContext>
+        <WPFViewModels:ScannedAreaViewModel/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="365*"/>
+            <RowDefinition Height="51"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="82.441"/>
+            <ColumnDefinition Width="95.559"/>
+            <ColumnDefinition Width="695*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.ColumnSpan="2">
+            <Label x:Name="label" Content="Name of this area"/>
+            <TextBox x:Name="textBox" Height="23" TextWrapping="Wrap" Text="{Binding Name}"/>
+            <Label x:Name="Radius_to_scan" Content="Radius to scan"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="145*"/>
+                    <ColumnDefinition Width="33*"/>
+                </Grid.ColumnDefinitions>
+                <Slider x:Name="slider" Maximum="100" Minimum="1" LargeChange="10" SmallChange="1" Value="{Binding HexNum}"/>
+                <Label x:Name="label7" Content="{Binding HexNum}" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top"/>
+
+            </Grid>
+            <Label x:Name="label1" Content="Number of Workers"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="145*"/>
+                    <ColumnDefinition Width="33*"/>
+                </Grid.ColumnDefinitions>
+                <Slider x:Name="slider1" Minimum="1" Maximum="100" SmallChange="1" LargeChange="10" Value="{Binding JobsCount}"/>
+                <Label x:Name="label6" Content="{Binding JobsCount}" Grid.Column="1" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top"/>
+            </Grid>
+
+            <Label x:Name="label2" Content="Latitude"/>
+            <Label x:Name="label3" Content="{Binding Coordinates.Latitude}" HorizontalAlignment="Right"/>
+            <Label x:Name="label4" Content="Longitude"/>
+            <Label x:Name="label5" Content="{Binding Coordinates.Longitude}" HorizontalAlignment="Right"/>
+            <Label x:Name="label8" Content="Estimated time to scan:"/>
+            <Label x:Name="label9" Content="{Binding Warning}" HorizontalAlignment="Right"/>
+            <Label x:Name="label10" Content="Accounts"/>
+            <ItemsControl ItemsSource="{Binding AccountNames}" HorizontalContentAlignment="Stretch">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+
+                        <Label x:Name="labelName" Content="{Binding}" HorizontalAlignment="Right" VerticalAlignment="Top"  Margin="0,0,0,0" />
+
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="153*"/>
+                    <ColumnDefinition Width="25*"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="cbName" ItemsSource="{Binding AllAvailableAccountNames}" />
+                <Button x:Name="button" Grid.Column="1" Content="+" Click="button_Click"/>
+            </Grid>
+        </StackPanel>
+        <Button x:Name="Escape" x:FieldModifier="public" Content="Cancel" Grid.Row="1" Width="75" Click="Escape_Click" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsCancel="True" />
+        <Button Content="Ok" x:Name="Ok" Grid.Row="1" Width="75" Click="Ok_Click" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" IsDefault="True" />
+        <m:Map x:Name="map" Grid.Column="2" CredentialsProvider="Atpdvu7I6Q0xcwsAX3MhgY6DWkP6iXniB3PbsBaaQam3vNS9bGKVkrmJ_UzigTkU" Grid.RowSpan="2"/>
+    </Grid>
+</Window>

@@ -2,6 +2,7 @@
 using MandraSoft.PokemonGo.Api.Managers;
 using MandraSoft.PokemonGo.DAL;
 using MandraSoft.PokemonGo.Models.WebModels.Mixed;
+using MandraSoft.PokemonGo.Models.WebModels.Responses;
 using MandraSoft.PokemonGo.Web.Jobs;
 using System.Collections.Generic;
 using System.IO;
@@ -14,16 +15,23 @@ namespace MandraSoft.PokemonGo.Web
 {
     public class WebApiApplication : System.Web.HttpApplication
     {
+        protected string _LiveStateFile;
         protected string _stateFile;
         protected void Application_Start()
         {
             _stateFile = Server.MapPath("~/SaveState.json");
+            _LiveStateFile = Server.MapPath("~/LiveState.json");
             SqlServerTypes.Utilities.LoadNativeAssemblies(Server.MapPath("~/bin"));
 
             if (File.Exists(_stateFile))
             {
                 Globals.DumpQueue = Newtonsoft.Json.JsonConvert.DeserializeObject<List<SpawnPoint>>(System.IO.File.ReadAllText(_stateFile));
                 File.Delete(_stateFile);
+            }
+            if (File.Exists(_LiveStateFile))
+            {
+                Globals.LivePokemons = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<ulong, Dictionary<long, MapPokemon>>>(System.IO.File.ReadAllText(_LiveStateFile));
+                File.Delete(_LiveStateFile);
             }
             using (var db = new PokemonDb())
             {
@@ -59,6 +67,9 @@ namespace MandraSoft.PokemonGo.Web
            
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(backup);
             System.IO.File.WriteAllText(_stateFile, json);
+
+            json = Newtonsoft.Json.JsonConvert.SerializeObject(Globals.LivePokemons);
+            System.IO.File.WriteAllText(_LiveStateFile, json);
         }
     }
 }

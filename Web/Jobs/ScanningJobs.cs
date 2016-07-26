@@ -15,6 +15,8 @@ using MandraSoft.PokemonGo.DAL;
 using EntityFramework.BulkInsert.Extensions;
 using MandraSoft.PokemonGo.Api;
 using MandraSoft.PokemonGo.Api.ClientExtensions;
+using MandraSoft.PokemonGo.Models.WebModels.Responses;
+using MoreLinq;
 
 namespace MandraSoft.PokemonGo.Web.Jobs
 {
@@ -23,7 +25,7 @@ namespace MandraSoft.PokemonGo.Web.Jobs
         static internal List<SpawnPoint> _Backup;
         static public ConcurrentDictionary<string, Location> Locs = new ConcurrentDictionary<string, Location>();
 
-        static public async Task DumpDataToDatabase()
+        static public async Task DumpToDbAndLiveDbAndPurge()
         {
             List<SpawnPoint> tmpList;
             lock (Globals.DumpQueueLock)
@@ -50,7 +52,25 @@ namespace MandraSoft.PokemonGo.Web.Jobs
                         encounters.Add(ec.Id, new MandraSoft.PokemonGo.Models.Entities.Encounter() { IdU = ec.Id, PokemonId = ec.PokemonId, SpawnPointId = sp.Id, EstimatedSpawnTime = ec.SpawnTime, ExpirationTime = ec.SpawnTime.AddMinutes(15) });
                 }
             }
-
+            try
+            {
+                var toImport = tmpList.SelectMany(x => x.Encounters.Select(a => new MapPokemon() { Latitude = x.Latitude, Longitude = x.Longitude, EncounterId = (long)a.Id, ExpirationTime = a.SpawnTime.AddMinutes(15), PokedexNumber = a.PokemonId })).DistinctBy(x => x.EncounterId).ToList();
+                Globals.IsUpdatingLivePokemons = true;
+                foreach (var pokemon in toImport)
+                {
+                    var cellId = S2CellId.FromLatLng(S2LatLng.FromDegrees(pokemon.Latitude.Value, pokemon.Longitude.Value)).ParentForLevel(13);
+                    if (!Globals.LivePokemons.ContainsKey(cellId.Id))
+                        Globals.LivePokemons.Add(cellId.Id, new Dictionary<long, MapPokemon>());
+                    if (!Globals.LivePokemons[cellId.Id].ContainsKey(pokemon.EncounterId))
+                        Globals.LivePokemons[cellId.Id].Add(pokemon.EncounterId, pokemon);
+                }
+                //Importing then purging.
+                PurgeExpiredPokemons();
+            }
+            finally
+            {
+                Globals.IsUpdatingLivePokemons = false;
+            }
             if (await Communicator.Db.DbUpdateSemaphore.WaitAsync(-1))
             {
                 try
@@ -90,6 +110,17 @@ namespace MandraSoft.PokemonGo.Web.Jobs
                     Communicator.Db.DbUpdateSemaphore.Release();
                 }
             }
+        }
+        static public void PurgeExpiredPokemons()
+        {
+            var now = System.DateTime.UtcNow;
+            var flatlist = Globals.LivePokemons.SelectMany(x => x.Value.Where(p => p.Value.ExpirationTime < now).Select(p => new { CellId = x.Key, EncounterId = p.Key })).GroupBy(x => x.CellId).ToDictionary(x => x.Key, x => x.Select(a=> a.EncounterId).ToList());
+            foreach (var kv in flatlist)           
+                foreach (var v in kv.Value)
+                {
+                    Globals.LivePokemons[kv.Key].Remove(v);
+                }
+           
         }
         static public async Task ScanAllArea(double lat1, double lng1, double lat2, double lng2, int splittedIn, int indexNumber, string clientCacheName)
         {

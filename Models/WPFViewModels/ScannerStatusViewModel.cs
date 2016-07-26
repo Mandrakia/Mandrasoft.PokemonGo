@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MandraSoft.PokemonGo.Models.Enums
+namespace MandraSoft.PokemonGo.Models.WPFViewModels
 {
-    public enum AuthType
+    public class ScannerStatusViewModel
     {
-        Google = 0,
-        PTC = 1
+
     }
 }

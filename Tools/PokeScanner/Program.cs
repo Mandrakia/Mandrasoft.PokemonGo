@@ -48,8 +48,7 @@ namespace MandraSoft.PortablePokeRadar
                     await Task.Delay(5000);
                 }
             }
-            Console.WriteLine("Launching workers");
-            var bounds = System.Configuration.ConfigurationManager.AppSettings["BoundsToScan"].Split(',').Select(x => double.Parse(x.Trim(), System.Globalization.CultureInfo.InvariantCulture)).ToArray();
+            Console.WriteLine("Launching workers");            
             var area = (S2LatLng.FromDegrees(bounds[0], bounds[1]).GetEarthDistance(S2LatLng.FromDegrees(bounds[0], bounds[3]))/1000)
                 * (S2LatLng.FromDegrees(bounds[0], bounds[1]).GetEarthDistance(S2LatLng.FromDegrees(bounds[2], bounds[1]))/1000);
             

@@ -218,7 +218,7 @@
             if(selectedIds == null) selectedIds = [];
             lastCallSucceeded = false;
             $.ajax({
-                url: 'api/Pokemons/ListAllNew/',
+                url: 'api/Pokemons/ListAll2/',
                 data: { lang: lang, neLat: bounds.getNorthEast().lat(), neLng: bounds.getNorthEast().lng(), swLat: bounds.getSouthWest().lat(), swLng: bounds.getSouthWest().lng(), pokemonIds: selectedIds },
                 type: 'POST',
                 success: function (pokemons) {
@@ -367,7 +367,8 @@
         }
         function initMap() {
             var mapDiv = document.getElementById('map');
-            map = new google.maps.Map(mapDiv, {          
+            map = new google.maps.Map(mapDiv, {
+                center: { lat:48.863947,lng: 2.344622 },
                 disableDoubleClickZoom: true,
                 zoomControl: true,
                 zoomControlOptions: {
@@ -402,31 +403,26 @@
 
             setInterval(ReRenderPokemons, 1000);
 
-            if (latLng != null) {
-                if (latLng.split(',').length == 2) {
-                    map.setCenter({ lat: parseFloat(latLng.split(',')[0].trim()), lng: parseFloat(latLng.split(',')[1].trim()) });
-                    $.get('api/SpawnPoints/GetCells4?latLng=' + latLng + '&hexNum=' + getParameterByName('hexNum'), RenderCells);
-                }
-                else
-                    $.get('api/SpawnPoints/GetCells?latLng=' + latLng, RenderCells);
+            if (latLng != null)
+            {
+                $.get('api/SpawnPoints/GetCells?latLng=' + latLng, RenderCells);
             }
-            else {
+            else
                 SwitchMode("DisplayPokemons");
-                if (!!navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function (position) {
-                        selfMarker = new google.maps.Marker({
-                            position: { lat: position.coords.latitude, lng: position.coords.longitude },
-                            title: "Ma position"
-                        });
-                        var pos = { lat: position.coords.latitude, lng: position.coords.longitude };
-                        selfMarker.setMap(map);
-                        map.setCenter(pos);
-                        setInterval(positionUpdate, 1000);
+            if (!!navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    selfMarker = new google.maps.Marker({
+                        position: { lat: position.coords.latitude, lng: position.coords.longitude },
+                        title: "Ma position"
                     });
-                } else {
-                    // No support
-                }
-            }
+                    var pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                    selfMarker.setMap(map);
+                    map.setCenter(pos);
+                    setInterval(positionUpdate, 1000);
+                });
+            } else {
+                // No support
+            }          
          
         }
         function positionUpdate() {

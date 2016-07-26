@@ -26,6 +26,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MandraSoft.PokemonGo.DataExporter", "Tools\MandraSoft.PokemonGo.DataExporter\MandraSoft.PokemonGo.DataExporter.csproj", "{93F560F3-9BB6-4875-B407-5447D0C64362}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokeScannerV2", "Tools\PokeScannerV2\PokeScannerV2.csproj", "{D89440C3-BE94-4331-8BCD-D1CC597B3EC2}"
+EndProject
 Global
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true
@@ -67,6 +71,14 @@ Global
 		{ACA31990-1C87-4CB6-823C-30ECD5574254}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACA31990-1C87-4CB6-823C-30ECD5574254}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACA31990-1C87-4CB6-823C-30ECD5574254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93F560F3-9BB6-4875-B407-5447D0C64362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93F560F3-9BB6-4875-B407-5447D0C64362}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93F560F3-9BB6-4875-B407-5447D0C64362}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93F560F3-9BB6-4875-B407-5447D0C64362}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D89440C3-BE94-4331-8BCD-D1CC597B3EC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D89440C3-BE94-4331-8BCD-D1CC597B3EC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D89440C3-BE94-4331-8BCD-D1CC597B3EC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D89440C3-BE94-4331-8BCD-D1CC597B3EC2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,5 +86,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{3343DAEC-45B0-4DE0-B2F3-5488F49AF988} = {EE2A841E-8613-419F-841A-D67F76BCEFB5}
 		{24EEBC76-6BAE-4E02-897D-B3CC5331DA0B} = {EE2A841E-8613-419F-841A-D67F76BCEFB5}
+		{93F560F3-9BB6-4875-B407-5447D0C64362} = {EE2A841E-8613-419F-841A-D67F76BCEFB5}
+		{D89440C3-BE94-4331-8BCD-D1CC597B3EC2} = {EE2A841E-8613-419F-841A-D67F76BCEFB5}
 	EndGlobalSection
 EndGlobal

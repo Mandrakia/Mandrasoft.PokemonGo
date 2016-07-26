@@ -44,7 +44,7 @@ namespace MandraSoft.PokemonGo.Communicator
         private void InitHttpClient()
         {
             _httpClient = new HttpClient(new ClientCompressionHandler(new GZipCompressor(), new DeflateCompressor()));
-            _httpClient.BaseAddress = new Uri(Configuration.WebUri);
+            _httpClient.BaseAddress = new Uri(Configuration.Settings.WebUri);
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -86,7 +86,7 @@ namespace MandraSoft.PokemonGo.Communicator
                 try
                 {
 
-                    if ((DateTime.UtcNow - _lastSentData).TotalSeconds > Configuration.WebDelay)
+                    if ((DateTime.UtcNow - _lastSentData).TotalSeconds > Configuration.Settings.WebDelay)
                     {
                         List<WildPokemonPoco> listToSend = new List<WildPokemonPoco>();
                         try

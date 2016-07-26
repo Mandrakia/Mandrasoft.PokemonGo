@@ -110,6 +110,7 @@
     <Compile Include="Managers\MapsCellsManager.cs" />
     <Compile Include="PokemonGoClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScanningAlgorithm\Scanner.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

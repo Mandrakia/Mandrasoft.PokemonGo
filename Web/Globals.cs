@@ -1,6 +1,7 @@
 ﻿using MandraSoft.PokemonGo.Api;
 using MandraSoft.PokemonGo.Api.Managers;
 using MandraSoft.PokemonGo.Models.WebModels.Mixed;
+using MandraSoft.PokemonGo.Models.WebModels.Responses;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,5 +20,10 @@ namespace MandraSoft.PokemonGo.Web
         static public MapsCellsManager MapManager { get; set; }
         static public Dictionary<int,Dictionary<string, string>> PokemonNamesById;
         static public Dictionary<string, Dictionary<int, string>> PokemonNamesByLang;
+
+        static public object LivePokemonsLock = new object();
+        static public volatile bool IsUpdatingLivePokemons;
+        static public Dictionary<ulong, Dictionary<long, MapPokemon>> LivePokemons { get; set; } = new Dictionary<ulong, Dictionary<long, MapPokemon>>();
+
     }
 }

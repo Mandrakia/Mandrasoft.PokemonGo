@@ -42,6 +42,10 @@
       <HintPath>..\packages\Google.Protobuf.3.0.0-beta4\lib\net45\Google.Protobuf.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="S2Geometry">
       <HintPath>..\Tools\PokeScanner\bin\Debug\S2Geometry.dll</HintPath>
     </Reference>
@@ -100,6 +104,12 @@
     <Compile Include="WebModels\Responses\Cells.cs" />
     <Compile Include="WebModels\Responses\MapPokemon.cs" />
     <Compile Include="WebModels\Mixed\SpawnPoint.cs" />
+    <Compile Include="WPFViewModels\AccountsViewModel.cs" />
+    <Compile Include="WPFViewModels\BaseViewModel.cs" />
+    <Compile Include="WPFViewModels\LatLngViewModel.cs" />
+    <Compile Include="WPFViewModels\ScannedAreaViewModel.cs" />
+    <Compile Include="WPFViewModels\ScannerSettingsViewModel.cs" />
+    <Compile Include="WPFViewModels\ScannerStatusViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

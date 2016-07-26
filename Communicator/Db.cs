@@ -52,7 +52,7 @@ namespace MandraSoft.PokemonGo.Communicator
                         _Buffer[wild.EncounterId] = wild;
                 }
             }
-            if ((DateTime.UtcNow - _lastSentData).TotalSeconds > Configuration.DbDelay)
+            if ((DateTime.UtcNow - _lastSentData).TotalSeconds > Configuration.Settings.DbDelay)
             {
                 if (await _Semaphore.WaitAsync(1))
                 {

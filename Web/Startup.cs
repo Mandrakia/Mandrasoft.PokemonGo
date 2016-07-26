@@ -2,7 +2,7 @@
 using Owin;
 using Hangfire;
 using MandraSoft.PokemonGo.Web.Jobs;
-
+using System.Linq;
 [assembly: OwinStartup(typeof(MandraSoft.PokemonGo.Web.Startup))]
 
 namespace MandraSoft.PokemonGo.Web
@@ -16,8 +16,8 @@ namespace MandraSoft.PokemonGo.Web
             {
                 Authorization = new [] { new MyRestrictiveAuthorizationFilter() }
             });
-
-            RecurringJob.AddOrUpdate("Dump Queue Encounters", () => ScanningJobs.DumpDataToDatabase(), Cron.Minutely);
+            RecurringJob.AddOrUpdate("Dump Queue Encounters", () => ScanningJobs.DumpToDbAndLiveDbAndPurge(), Cron.Minutely);
+            //RecurringJob.AddOrUpdate("Purge Expired Pokemons from RAM", () => ScanningJobs.PurgeExpiredPokemons(), Cron.Minutely);
             //var jobCountersParis = 50;
             //for (var i = 0; i < 100; i++)
             //    RecurringJob.RemoveIfExists(i.ToString());
@@ -39,7 +39,7 @@ namespace MandraSoft.PokemonGo.Web
             //    RecurringJob.AddOrUpdate(iTotal.ToString(), () => ScanningJobs.ScanAllParisArea(48.883994, 2.660292, 48.859859, 2.619515, jobCountersRichard, i,"ClientRichard"), Cron.Minutely());
             //    iTotal++;
             //}
-            app.UseHangfireServer(new BackgroundJobServerOptions() { WorkerCount = 100 });
+            app.UseHangfireServer(new BackgroundJobServerOptions() { WorkerCount = 2 });
             //Hangfire.RecurringJob.AddOrUpdate("Update Paris 1", () => ScanningJobs.ScanAllPokemonsForAddress("1er arrondissement,75001  Paris"), Cron.MinuteInterval(1));
             // Pour plus d'informations sur la façon de configurer votre application, consultez http://go.microsoft.com/fwlink/?LinkID=316888
         }

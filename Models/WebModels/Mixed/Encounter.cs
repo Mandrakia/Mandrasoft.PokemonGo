@@ -12,5 +12,6 @@ namespace MandraSoft.PokemonGo.Models.WebModels.Mixed
         public int PokemonId { get; set; }
         public string PokemonName { get; set; }
         public DateTime SpawnTime { get; set; }
+        public string SpawnId { get; set; }
     }
 }
