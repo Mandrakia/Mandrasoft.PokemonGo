@@ -98,7 +98,7 @@ namespace MandraSoft.PokemonGo.Api.Extensions
             //Check Session closed.
             if (withAuthTicket && pogoClient._authTicket.ExpireTimestampMs < (ulong)DateTime.UtcNow.ToUnixTime())
             {
-                await pogoClient.LoginPtc();
+                await pogoClient.Login();
                 await pogoClient.SetServer();
                 url = pogoClient._apiUrl;
             }
