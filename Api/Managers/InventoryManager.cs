@@ -53,11 +53,15 @@ namespace MandraSoft.PokemonGo.Api.Managers
                         if (oPokemon != null)
                             Items.Remove(oPokemon);
                     }
+                    // Just to make sure
+                    else if (item.InventoryItemData == null)
+                        continue;
                     //Should be unique hopefully...
                     else if (item.InventoryItemData.PlayerStats != null)
                     {
                         var oItem = Items.Where(x => x.InventoryItemData.PlayerStats != null).SingleOrDefault();
-                        if (oItem.ModifiedTimestampMs < item.ModifiedTimestampMs)
+                        if (oItem == null) Items.Add(item);
+                        else if (oItem.ModifiedTimestampMs < item.ModifiedTimestampMs)
                             Items[Items.IndexOf(oItem)] = item;
                     }
                     else if (item.InventoryItemData.Item != null)
@@ -88,9 +92,30 @@ namespace MandraSoft.PokemonGo.Api.Managers
                         else if (oItem.ModifiedTimestampMs < item.ModifiedTimestampMs)
                             Items[Items.IndexOf(oItem)] = item;
                     }
+                    else if (item.InventoryItemData.PlayerCurrency != null)
+                    {
+                        var oItem = Items.Where(x => x.InventoryItemData.PlayerCurrency != null).FirstOrDefault();
+                        if (oItem == null) Items.Add(item);
+                        else if (oItem.ModifiedTimestampMs < item.ModifiedTimestampMs)
+                            Items[Items.IndexOf(oItem)] = item;
+                    }
+                    else if (item.InventoryItemData.EggIncubators != null)
+                    {
+                        var oItem = Items.Where(x => x.InventoryItemData.EggIncubators != null).FirstOrDefault();
+                        if (oItem == null) Items.Add(item);
+                        else if (oItem.ModifiedTimestampMs < item.ModifiedTimestampMs)
+                            Items[Items.IndexOf(oItem)] = item;
+                    }
+                    else if (item.InventoryItemData.AppliedItems != null)
+                    {
+                        var oItem = Items.Where(x => x.InventoryItemData.AppliedItems != null).FirstOrDefault();
+                        if (oItem == null) Items.Add(item);
+                        else if (oItem.ModifiedTimestampMs < item.ModifiedTimestampMs)
+                            Items[Items.IndexOf(oItem)] = item;
+                    }
                     else
                     {
-                        //TODO: Handle Incubators etc...
+                        //TODO: Anything else...
                     }
                 }
             }

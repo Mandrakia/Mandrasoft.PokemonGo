@@ -24,7 +24,7 @@ namespace MandraSoft.PokemonGoMapImporter
             List<WildPokemonPoco> pokemons = new List<WildPokemonPoco>();
             var pathToFile = args[0];
             Logger.Write($"Opening database : {pathToFile}");
-            using (var conn = new SQLiteConnection($"Data Source={pathToFile}))
+            using (var conn = new SQLiteConnection($"Data Source={pathToFile}"))
             {
                 conn.Open();
                 Logger.Write("Database opened");
