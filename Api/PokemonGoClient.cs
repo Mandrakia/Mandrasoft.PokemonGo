@@ -10,14 +10,10 @@ using POGOProtos.Networking.Envelopes;
 using POGOProtos.Networking.Requests;
 using POGOProtos.Networking.Responses;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Extensions.Compression.Client;
 using System.Net.Http.Extensions.Compression.Core.Compressors;
-using System.Text;
 using System.Threading.Tasks;
 using MandraSoft.PokemonGo.Api.Logging;
 
@@ -204,7 +200,8 @@ namespace MandraSoft.PokemonGo.Api
                 Start = serverResponse.AuthTicket.Start
             };
             _apiUrl = $"https://{serverResponse.ApiUrl}/rpc";
-        }       
+            await Templates.Initialise(this);
+        }
 
         public async Task<POGOProtos.Networking.Envelopes.RequestEnvelope> GetRequest(bool withAuthTicket = true,double? latitude=null,double? longitude=null,params Request[] customRequests)
         {

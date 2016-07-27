@@ -98,6 +98,7 @@
     <Compile Include="ClientExtensions\Map.cs" />
     <Compile Include="ClientExtensions\Pokemons.cs" />
     <Compile Include="ClientExtensions\Status.cs" />
+    <Compile Include="ClientExtensions\Templates.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\HttpClientExtensions.cs" />
     <Compile Include="Globals.cs" />

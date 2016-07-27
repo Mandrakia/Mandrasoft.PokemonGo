@@ -31,5 +31,27 @@ namespace MandraSoft.PokemonGo.Api.ClientExtensions
             };
             return new Request() { RequestType = RequestType.DownloadSettings, RequestMessage = msg.ToByteString() };
         }
+        static public Request GetDownloadRemoteConfigVersionRequest(this PokemonGoClient client)
+        {
+            var msg = new DownloadRemoteConfigVersionMessage()
+            {
+                Platform = POGOProtos.Enums.Platform.Android,
+                AppVersion = 2903
+            };
+            return new Request() { RequestType = RequestType.DownloadRemoteConfigVersion, RequestMessage = msg.ToByteString() };
+        }
+        static public Request GetAssetDigestRequest(this PokemonGoClient client)
+        {
+            var msg = new GetAssetDigestMessage()
+            {
+                Platform = POGOProtos.Enums.Platform.Android,
+                AppVersion = 2903
+            };
+            return new Request() { RequestType = RequestType.GetAssetDigest, RequestMessage = msg.ToByteString() };
+        }
+        static public Request GetDownloadItemTemplatesRequest(this PokemonGoClient client)
+        {
+            return new Request() { RequestType = RequestType.DownloadItemTemplates };
+        }
     }
 }
